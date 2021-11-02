@@ -1002,6 +1002,41 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    def test_latest_archiving_date(self, *mock):
+        """
+        Test that the ``first_activated`` property correctly fetches the ``last_activated``
+        time for the first ``AppServer`` to activate.
+        """
+        instance = OpenEdXInstanceFactory()
+        datetime_before = timezone.now()
+
+        # If instance is not archived it should return None
+        instance.save()
+        assert instance.latest_archiving_date is None
+
+        # If instance is archived it should return the datetime it was archived at
+        instance.archive()
+        assert datetime_before < instance.latest_archiving_date < timezone.now()
+
+        # If instance gets unarchived it should return None again
+        instance.ref.is_archived = False
+        instance.save()
+        assert instance.latest_archiving_date is None
+
+        # If instance is archived a second time it should return the datetime it was archived the second time
+        datetime_before_second_archive = timezone.now()
+        instance.archive()
+        assert datetime_before < datetime_before_second_archive < instance.latest_archiving_date < timezone.now()
+
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch.object(GandiV5API, 'remove_dns_record')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.deprovision_rabbitmq')
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
     # pylint: disable=too-many-locals
     def test_archive(
             self,

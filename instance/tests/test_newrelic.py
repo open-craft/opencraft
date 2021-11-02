@@ -264,7 +264,7 @@ class NewRelicTestCase(TestCase):
                     'threshold': '2',
                     'operator': 'above',
                     'priority': 'critical',
-                    'time_function': 'all',
+                    'time_function': 'any',
                 }],
                 'nrql': {
                     'query': query,
