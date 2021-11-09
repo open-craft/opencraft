@@ -218,13 +218,6 @@ class S3BucketInstanceMixin(models.Model):
                     ],
                     "Resource": ["arn:aws:s3:::{}/*".format(self.s3_bucket_name)]
                 },
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "s3:ListBucket",
-                    ],
-                    "Resource": ["arn:aws:s3:::*"]
-                },
             ]
         }
 
@@ -319,15 +312,19 @@ class S3BucketInstanceMixin(models.Model):
             )
         return self._s3_client
 
-    def _is_bucket_exists(self, bucket_name=None):
+    def _is_bucket_exists(self):
         """
-        Returns True if bucket_name is an existing bucket for thiscredential holder,
-        otherwise, returns False.
+        Returns True if bucket already exists, otherwise returns False.
         """
-        bucket_name = bucket_name or self.s3_bucket_name
-        buckets = [bucket['Name'] for bucket in self.s3.list_buckets()['Buckets']]
+        try:
+            self.s3.head_bucket(Bucket=self.s3_bucket_name)
+        except ClientError as e:
+            if e.response.get('Error', {}).get('Code') == '404':
+                return False
+            else:
+                raise
 
-        return bucket_name in buckets
+        return True
 
     def _create_bucket(self, max_tries=4, retry_delay=15, location=None):
         """
@@ -339,9 +336,6 @@ class S3BucketInstanceMixin(models.Model):
         location_constraint = location or self.s3_region
         for attempt in range(1, max_tries + 1):
             try:
-                # If the bucket exists, break the loop
-                # This avoids calling _perform_create_bucket unnecessarily
-                # But still runs _update_bucket_policies
                 if self._is_bucket_exists():
                     self.logger.info('Bucket %s already exists', self.s3_bucket_name)
                     break
