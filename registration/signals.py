@@ -20,7 +20,7 @@
 Signals related to registration.
 """
 from django.conf import settings
-from django.dispatch import receiver
+from django.dispatch import receiver, Signal
 from django_rest_passwordreset.models import ResetPasswordToken
 from django_rest_passwordreset.signals import reset_password_token_created
 from django_rest_passwordreset.views import ResetPasswordRequestToken
@@ -31,6 +31,16 @@ from opencraft.utils import html_email_helper
 from registration.models import BetaTestApplication
 from registration.utils import send_changes_deployed_success_email
 
+
+
+# Signals #####################################################################
+
+# Emitted after beta test application has been accepted
+betapplication_accepted = Signal(providing_args=['application'])
+
+
+
+# Receiver Functions ###################################################################
 
 # noinspection PyUnusedLocal
 @receiver(reset_password_token_created)
