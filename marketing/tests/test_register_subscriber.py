@@ -23,10 +23,11 @@ Tests for the register subscriber function
 # Imports #####################################################################
 
 from unittest import mock
+from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from datetime import datetime
+
 
 from instance.models.appserver import AppServer
 from marketing.models import Subscriber
@@ -96,4 +97,3 @@ class RegisterSubscriberTestCase(TestCase):
 
         on_appserver_spawned(sender=None, instance=instance, appserver=appserver)
         self.assertFalse(Subscriber.objects.filter(user_id=application.user.id).exists())
-

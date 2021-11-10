@@ -32,17 +32,17 @@ from registration.models import BetaTestApplication
 from registration.utils import send_changes_deployed_success_email
 
 
-
 # Signals #####################################################################
 
 # Emitted after beta test application has been accepted
 betapplication_accepted = Signal(providing_args=['application'])
 
 
-
 # Receiver Functions ###################################################################
 
 # noinspection PyUnusedLocal
+
+
 @receiver(reset_password_token_created)
 def password_reset_token_created(
         sender: ResetPasswordRequestToken,
