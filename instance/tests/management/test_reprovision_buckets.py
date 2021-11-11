@@ -56,11 +56,13 @@ class ReprovisionBucketsTestCase(TestCase):
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin._update_bucket_lifecycle')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin._update_bucket_cors')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin._perform_create_bucket')
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin._is_bucket_exists')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin._update_iam_policy')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.create_iam_user')
     def test_migrate(self,
                      mock_create_iam_user,
                      mock_update_iam,
+                     mock_is_bucket_exists,
                      mock_create_bucket,
                      mock_update_cors,
                      mock_update_lifecycle,
