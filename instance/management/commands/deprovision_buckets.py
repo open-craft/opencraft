@@ -24,11 +24,13 @@ from datetime import timedelta
 import logging
 
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from django.utils import timezone
 
 from instance.models.openedx_instance import OpenEdXInstance
 
 LOG = logging.getLogger(__name__)
+TASK_PR_REGEX = r"\-\w{2}(\-)?\d{3,5}\-"
 
 
 class Command(BaseCommand):
@@ -66,6 +68,12 @@ class Command(BaseCommand):
             default=3,
             help='ensure at least num_days_archived since instance has been archived'
         )
+        parser.add_argument(
+            '--dry-run',
+            action='store_true',
+            default=False,
+            help='run command without deprovisioning buckets'
+        )
 
     def handle(self, *args, **options):
         """
@@ -74,29 +82,49 @@ class Command(BaseCommand):
         instances.
         """
 
+        dry_run = options['dry_run']
         instance_ref_ids = options['instance_ref_ids']
         num_days_archived = options['num_days_archived']
 
-        # Identify instances that can be deprovisioned
-        if not instance_ref_ids:
-            # if instance_ref_ids are not specified we will archive sandbox instances
-            archived_instances = OpenEdXInstance.objects.filter(
-                ref_set__is_archived=True,
-                internal_lms_domain__contains=".sandbox.",
-                s3_bucket_name__isnull=False
-            )
+        # Checking for both LMS domain and bucket name may seem to be redundant,
+        # but we still want to deprovision S3 buckets in case any of the values
+        # are modified manually for the instance. Also, in case of instances
+        # that are created using production settings, bucket or instance name
+        # may not contain "sandbox" at all.
+        instances = OpenEdXInstance.objects.filter(
+            ref_set__is_archived=True
+        ).exclude(
+            Q(s3_bucket_name__isnull=True) |
+            Q(s3_bucket_name__exact="")
+        )
+
+        if instance_ref_ids:
+            instances = instances.filter(ref_set__id__in=instance_ref_ids)
         else:
-            archived_instances = OpenEdXInstance.objects.filter(
-                ref_set__is_archived=True,
-                s3_bucket_name__isnull=False,
-                ref_set__id__in=instance_ref_ids
+            instances = instances.filter(
+                Q(internal_lms_domain__contains=".sandbox.") |
+                Q(internal_lms_domain__iregex=TASK_PR_REGEX) |
+                Q(s3_bucket_name__contains="-sandbox-") |
+                Q(s3_bucket_name__iregex=TASK_PR_REGEX)
             )
+
+        # Filter for those instances which were archived X days ago or the
+        # archiving process did not complete properly.
         archived_instances = [
-            i for i in archived_instances if
-            i.latest_archiving_date
-            and i.latest_archiving_date + timedelta(days=num_days_archived) < timezone.now()
+            instance
+            for instance in instances if (
+                instance.latest_archiving_date is not None and
+                instance.latest_archiving_date > timezone.now() - timedelta(days=num_days_archived)
+            ) or instance.latest_archiving_date is None
         ]
+
         LOG.info('Found "%d" instances for which S3 buckets can be deprovisioned', len(archived_instances))
+
         for instance in archived_instances:
             LOG.info('Triggering deprovision_s3 from management command for instance id %d', instance.id)
-            instance.deprovision_s3()
+
+            if not dry_run:
+                try:
+                    instance.deprovision_s3()
+                except Exception as exc:
+                    LOG.error('Cannot delete bucket for %d: %s', instance.id, str(exc))
