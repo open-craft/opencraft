@@ -90,10 +90,12 @@ class DeprovisionBucketsTestCase(TestCase):
         ('se-1234', 'testdomain'),
     )
     @ddt.unpack
-    def test_deprovision_s3_of_archived_sandbox(self, *mocks, bucket_name, lms_domain):
+    def test_deprovision_s3_of_archived_sandbox(self, *params):
         """
         Verify that the command correctly deprovisions the bucket for an archived sandbox instance.
         """
+        *_, bucket_name, lms_domain = params
+
         instance = OpenEdXInstance.objects.create(
             sub_domain='test',
             name='test instance',
