@@ -126,5 +126,5 @@ class Command(BaseCommand):
             if not dry_run:
                 try:
                     instance.deprovision_s3()
-                except Exception as exc:
+                except Exception as exc:  # pylint: disable=broad-except
                     LOG.error('Cannot delete bucket for %d: %s', instance.id, str(exc))

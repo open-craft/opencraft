@@ -19,11 +19,11 @@
 """
 Instance - deprovision_buckets unit tests
 """
-import ddt
 import re
 from datetime import timedelta
 from unittest.mock import patch
 
+import ddt
 from django.core.management import call_command
 from django.test import TestCase
 from django.utils.six import StringIO
