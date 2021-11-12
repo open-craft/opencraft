@@ -35,5 +35,4 @@ def register_subscriber(sender, **kwargs):
 
     application = kwargs['application']
 
-
     Subscriber.objects.get_or_create(user_id=application.user.id)
