@@ -35,8 +35,5 @@ def register_subscriber(sender, **kwargs):
 
     application = kwargs['application']
 
-    # Ignore if the appserver was not spawned for a beta tester.
-    if not application:
-        return
 
     Subscriber.objects.get_or_create(user_id=application.user.id)
