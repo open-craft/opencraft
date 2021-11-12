@@ -79,15 +79,15 @@ class DeprovisionBucketsTestCase(TestCase):
     @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
     @ddt.data(
         ('testbucket', '.sandbox.'),
-        ('testbucket', 'pr12345'),
-        ('testbucket', 'pr-12345'),
-        ('testbucket', 'se1234'),
-        ('testbucket', 'se-1234'),
+        ('testbucket', '-pr12345-'),
+        ('testbucket', '-pr-12345-'),
+        ('testbucket', '-se1234-'),
+        ('testbucket', '-se-1234-'),
         ('-sandbox-', 'testdomain'),
-        ('pr12345', 'testdomain'),
-        ('pr-12345', 'testdomain'),
-        ('se1234', 'testdomain'),
-        ('se-1234', 'testdomain'),
+        ('-pr12345-', 'testdomain'),
+        ('-pr-12345-', 'testdomain'),
+        ('-se1234-', 'testdomain'),
+        ('-se-1234-', 'testdomain'),
     )
     @ddt.unpack
     def test_deprovision_s3_of_archived_sandbox(self, *params):

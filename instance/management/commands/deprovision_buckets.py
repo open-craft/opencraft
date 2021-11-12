@@ -114,7 +114,7 @@ class Command(BaseCommand):
             instance
             for instance in instances if (
                 instance.latest_archiving_date is not None and
-                instance.latest_archiving_date > timezone.now() - timedelta(days=num_days_archived)
+                instance.latest_archiving_date + timedelta(days=num_days_archived) < timezone.now()
             ) or instance.latest_archiving_date is None
         ]
 
