@@ -28,9 +28,9 @@ from django.test import TestCase
 
 from instance.models.appserver import AppServer
 from marketing.models import Subscriber
-from registration.tests.utils import UserFactory
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
+from registration.tests.utils import BetaTestUserFactory
 
 
 # Test cases ##################################################################
@@ -46,7 +46,7 @@ class RegisterSubscriberTestCase(TestCase):
         Test new subscription entry for trial client on first successful launch of appserver
         """
 
-        user = UserFactory()
+        user = BetaTestUserFactory()
 
         instance = mock.Mock(first_activated=None)
         application = mock.Mock(user=user, subdomain='test', status=BetaTestApplication.PENDING)
@@ -63,7 +63,7 @@ class RegisterSubscriberTestCase(TestCase):
         Test no entry made in subscription table for paying clients on successful launch of appserver
         """
 
-        user = UserFactory()
+        user = BetaTestUserFactory()
 
         instance = mock.Mock(first_activated=None)
         application = mock.Mock(user=user, subdomain='test', status=BetaTestApplication.ACCEPTED)

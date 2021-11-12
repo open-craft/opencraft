@@ -30,7 +30,7 @@ from django.test import TestCase
 from instance.models.appserver import AppServer
 from registration.approval import ApplicationNotReady, accept_application, on_appserver_spawned
 from registration.models import BetaTestApplication
-from registration.tests.utils import UserFactory
+from registration.tests.utils import BetaTestUserFactory
 
 
 # Test cases ##################################################################
@@ -128,7 +128,7 @@ class ApprovalTestCase(TestCase):
         spawned manually
         """
 
-        user = UserFactory()
+        user = BetaTestUserFactory()
 
         appserver = mock.Mock(status=AppServer.Status.Running)
         instance = mock.Mock(first_activated=None)

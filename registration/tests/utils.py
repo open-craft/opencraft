@@ -201,18 +201,24 @@ class UserMixin:
             password=self.password,
         )
 
-class UserProfileFactory(DjangoModelFactory):
+class BetaTestUserProfileFactory(DjangoModelFactory):
+    """
+    Factory for creating UserProfile along with User
+    """
     class Meta:
         model = UserProfile
 
     full_name = "Test User"
-    accepted_privacy_policy=factory.LazyFunction(datetime.now)
-    accept_domain_condition=True
-    subscribe_to_updates=True
+    accepted_privacy_policy = factory.LazyFunction(datetime.now)
+    accept_domain_condition = True
+    subscribe_to_updates = True
 
     user = factory.SubFactory('registration.tests.utils.UserFactory', profile=None)
 
-class UserFactory(DjangoModelFactory):
+class BetaTestUserFactory(DjangoModelFactory):
+    """
+    Factory for creating User along with UserProfile
+    """
     class Meta:
         model = User
         django_get_or_create = ('username',)
@@ -221,4 +227,4 @@ class UserFactory(DjangoModelFactory):
     username = "test"
     email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username).lower())
 
-    profile = factory.RelatedFactory(UserProfileFactory, factory_related_name='user')
+    profile = factory.RelatedFactory(BetaTestUserProfileFactory, factory_related_name='user')
