@@ -35,7 +35,7 @@ from registration.utils import send_changes_deployed_success_email
 # Signals #####################################################################
 
 # Emitted after beta test application has been accepted
-betapplication_accepted = Signal(providing_args=['application'])
+betatestapplication_accepted = Signal(providing_args=['application'])
 
 
 # Receiver Functions ###################################################################

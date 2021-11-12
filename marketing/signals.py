@@ -21,11 +21,11 @@ Signals related to marketing.
 """
 from django.dispatch import receiver
 
-from registration.signals import betapplication_accepted
+from registration.signals import betatestapplication_accepted
 from marketing.models import Subscriber
 
 
-@receiver(betapplication_accepted)
+@receiver(betatestapplication_accepted)
 def register_subscriber(sender, **kwargs):
     """
     Registers a marketing email subscriber for Beta testers
