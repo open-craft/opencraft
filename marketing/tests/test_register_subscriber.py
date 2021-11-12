@@ -23,15 +23,12 @@ Tests for the register subscriber function
 # Imports #####################################################################
 
 from unittest import mock
-from datetime import datetime
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase
-
 
 from instance.models.appserver import AppServer
 from marketing.models import Subscriber
-from userprofile.models import UserProfile
+from registration.tests.utils import UserFactory
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 
@@ -49,17 +46,7 @@ class RegisterSubscriberTestCase(TestCase):
         Test new subscription entry for trial client on first successful launch of appserver
         """
 
-        user = get_user_model().objects.create_user(username='test', email='test@example.com')
-
-        UserProfile.objects.create(
-            user=user,
-            full_name="Test user 1",
-            accepted_privacy_policy=datetime.now(),
-            accept_domain_condition=True,
-            subscribe_to_updates=True,
-        )
-
-        user.refresh_from_db()
+        user = UserFactory()
 
         instance = mock.Mock(first_activated=None)
         application = mock.Mock(user=user, subdomain='test', status=BetaTestApplication.PENDING)
@@ -76,17 +63,7 @@ class RegisterSubscriberTestCase(TestCase):
         Test no entry made in subscription table for paying clients on successful launch of appserver
         """
 
-        user = get_user_model().objects.create_user(username='test', email='test@example.com')
-
-        UserProfile.objects.create(
-            user=user,
-            full_name="Test user 1",
-            accepted_privacy_policy=datetime.now(),
-            accept_domain_condition=True,
-            subscribe_to_updates=True,
-        )
-
-        user.refresh_from_db()
+        user = UserFactory()
 
         instance = mock.Mock(first_activated=None)
         application = mock.Mock(user=user, subdomain='test', status=BetaTestApplication.ACCEPTED)

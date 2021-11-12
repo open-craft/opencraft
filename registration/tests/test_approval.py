@@ -23,7 +23,6 @@ Tests for the betatest approval helper functions
 # Imports #####################################################################
 
 from unittest import mock
-from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -31,7 +30,7 @@ from django.test import TestCase
 from instance.models.appserver import AppServer
 from registration.approval import ApplicationNotReady, accept_application, on_appserver_spawned
 from registration.models import BetaTestApplication
-from userprofile.models import UserProfile
+from registration.tests.utils import UserFactory
 
 
 # Test cases ##################################################################
@@ -128,17 +127,8 @@ class ApprovalTestCase(TestCase):
         Check if the the first Appserver is correctly activated even when
         spawned manually
         """
-        user = get_user_model().objects.create_user(username='test', email='test@example.com')
 
-        UserProfile.objects.create(
-            user=user,
-            full_name="Test user 1",
-            accepted_privacy_policy=datetime.now(),
-            accept_domain_condition=True,
-            subscribe_to_updates=True,
-        )
-
-        user.refresh_from_db()
+        user = UserFactory()
 
         appserver = mock.Mock(status=AppServer.Status.Running)
         instance = mock.Mock(first_activated=None)

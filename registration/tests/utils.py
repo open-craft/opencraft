@@ -22,6 +22,7 @@ Utils for registration tests
 
 # Imports #####################################################################
 import time
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -35,7 +36,10 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
+import factory
+from factory.django import DjangoModelFactory
 
+from userprofile.models import UserProfile
 
 # Utility Functions ###########################################################
 
@@ -196,3 +200,25 @@ class UserMixin:
             email=self.email,
             password=self.password,
         )
+
+class UserProfileFactory(DjangoModelFactory):
+    class Meta:
+        model = UserProfile
+
+    full_name = "Test User"
+    accepted_privacy_policy=factory.LazyFunction(datetime.now)
+    accept_domain_condition=True
+    subscribe_to_updates=True
+
+    user = factory.SubFactory('registration.tests.utils.UserFactory', profile=None)
+
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = User
+        django_get_or_create = ('username',)
+
+
+    username = "test"
+    email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username).lower())
+
+    profile = factory.RelatedFactory(UserProfileFactory, factory_related_name='user')
