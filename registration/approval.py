@@ -57,10 +57,11 @@ def accept_application(application, appserver):
 
     send_welcome_email(application)
 
-    betatestapplication_accepted.send(sender=None, application=application)
-
     application.status = BetaTestApplication.ACCEPTED
     application.save()
+
+    # Send signal to notify beta test application is accepted
+    betatestapplication_accepted.send(sender=None, application=application)
 
 
 @receiver(appserver_spawned)
