@@ -94,7 +94,7 @@ class DeprovisionBucketsTestCase(TestCase):
         """
         Verify that the command correctly deprovisions the bucket for an archived sandbox instance.
         """
-        *_, bucket_name, lms_domain = params
+        bucket_name, lms_domain, *_ = params
 
         instance = OpenEdXInstance.objects.create(
             sub_domain='test',
