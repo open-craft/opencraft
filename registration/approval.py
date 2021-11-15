@@ -27,6 +27,7 @@ from django.dispatch import receiver
 
 from instance.models.appserver import AppServer
 from instance.signals import appserver_spawned
+from registration.signals import betatestapplication_accepted
 from registration.models import BetaTestApplication
 from registration.utils import send_welcome_email
 
@@ -58,6 +59,9 @@ def accept_application(application, appserver):
 
     application.status = BetaTestApplication.ACCEPTED
     application.save()
+
+    # Send signal to notify beta test application is accepted
+    betatestapplication_accepted.send(sender=None, application=application)
 
 
 @receiver(appserver_spawned)
