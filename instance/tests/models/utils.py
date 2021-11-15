@@ -14,6 +14,15 @@ class S3Stubber(Stubber):
     Helper class to simplify stubbing S3 operations
     """
 
+    def stub_head_bucket(self, bucket='test', bucket_exists=False):
+        """ Stub helper for 'head_bucket' """
+        if bucket_exists:
+            self.add_response('head_bucket', {}, {
+                'Bucket': bucket
+            })
+        else:
+            self.add_client_error('head_bucket', service_error_code='404')
+
     def stub_create_bucket(self, bucket='test', location='test'):
         """ Stub helper for 'create_bucket' """
         if not location or location == 'us-east-1':

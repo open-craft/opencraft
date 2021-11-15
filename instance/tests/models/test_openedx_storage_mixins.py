@@ -29,7 +29,6 @@ import ddt
 import yaml
 from botocore.exceptions import ClientError
 from botocore.session import get_session
-from botocore.stub import Stubber
 from django.conf import settings
 from django.test.utils import override_settings
 
@@ -405,6 +404,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                     storage.USER_POLICY_NAME,
                     instance.get_s3_policy()
                 )
+                stubber.stub_head_bucket()
                 stubber.stub_create_bucket()
                 stubber.stub_put_cors()
                 stubber.stub_set_expiration()
@@ -421,8 +421,9 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         max_tries = 4
-        stubber = Stubber(s3_client)
+        stubber = S3Stubber(s3_client)
         for _ in range(max_tries):
+            stubber.stub_head_bucket()
             stubber.add_client_error('create_bucket')
         with self.assertLogs('instance.models.instance', level='INFO') as cm:
             with stubber:
@@ -450,6 +451,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         instance.s3_bucket_name = 'test'
         max_tries = 4
         stubber = S3Stubber(s3_client)
+        stubber.stub_head_bucket()
         stubber.stub_create_bucket(location='')
         for _ in range(max_tries):
             stubber.stub_put_cors()
@@ -489,6 +491,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                 storage.USER_POLICY_NAME,
                 instance.get_s3_policy()
             )
+            stubber.stub_head_bucket()
             stubber.stub_create_bucket()
             stubber.stub_put_cors()
             stubber.stub_set_expiration()
@@ -560,6 +563,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                     storage.USER_POLICY_NAME,
                     instance.get_s3_policy()
                 )
+                stubber.stub_head_bucket()
                 stubber.stub_create_bucket(location='')
                 stubber.stub_put_cors()
                 stubber.stub_set_expiration()
@@ -601,6 +605,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                     storage.USER_POLICY_NAME,
                     instance.get_s3_policy()
                 )
+                stubber.stub_head_bucket()
                 stubber.stub_create_bucket(location='')
                 stubber.stub_put_cors()
                 stubber.stub_set_expiration()
@@ -642,6 +647,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                     storage.USER_POLICY_NAME,
                     instance.get_s3_policy()
                 )
+                stubber.stub_head_bucket()
                 stubber.stub_create_bucket()
                 stubber.stub_put_cors()
                 stubber.stub_set_expiration()
@@ -687,6 +693,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                     storage.USER_POLICY_NAME,
                     instance.get_s3_policy()
                 )
+                stubber.stub_head_bucket()
                 stubber.stub_create_bucket()
                 stubber.stub_put_cors()
                 stubber.stub_set_expiration()
@@ -736,6 +743,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                 storage.USER_POLICY_NAME,
                 instance.get_s3_policy()
             )
+            stubber.stub_head_bucket(bucket=instance.s3_bucket_name)
             stubber.stub_create_bucket(bucket=instance.s3_bucket_name, location='')
             stubber.stub_put_cors(bucket=instance.s3_bucket_name)
             stubber.stub_set_expiration(bucket=instance.s3_bucket_name)

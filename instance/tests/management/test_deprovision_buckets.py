@@ -23,6 +23,7 @@ import re
 from datetime import timedelta
 from unittest.mock import patch
 
+import ddt
 from django.core.management import call_command
 from django.test import TestCase
 from django.utils.six import StringIO
@@ -33,6 +34,7 @@ from instance.gandi import GandiV5API
 from instance.models.openedx_instance import OpenEdXInstance
 
 
+@ddt.ddt
 class DeprovisionBucketsTestCase(TestCase):
     """
     Test cases for the `deprovision_buckets` management command.
@@ -75,16 +77,31 @@ class DeprovisionBucketsTestCase(TestCase):
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
-    def test_deprovision_s3_of_archived_sandbox(self, *mocks):
+    @ddt.data(
+        ('testbucket', '.sandbox.'),
+        ('testbucket', '-pr12345-'),
+        ('testbucket', '-pr-12345-'),
+        ('testbucket', '-se1234-'),
+        ('testbucket', '-se-1234-'),
+        ('-sandbox-', 'testdomain'),
+        ('-pr12345-', 'testdomain'),
+        ('-pr-12345-', 'testdomain'),
+        ('-se1234-', 'testdomain'),
+        ('-se-1234-', 'testdomain'),
+    )
+    @ddt.unpack
+    def test_deprovision_s3_of_archived_sandbox(self, *params):
         """
         Verify that the command correctly deprovisions the bucket for an archived sandbox instance.
         """
+        bucket_name, lms_domain, *_ = params
+
         instance = OpenEdXInstance.objects.create(
             sub_domain='test',
             name='test instance',
             storage_type=OpenEdXInstance.S3_STORAGE,
-            s3_bucket_name='testbucket',
-            internal_lms_domain='.sandbox.'
+            s3_bucket_name=bucket_name,
+            internal_lms_domain=lms_domain,
         )
         instance.archive()
         # instances need to be archived for at least 3 months for us to be able to deprovision the s3 buckets
