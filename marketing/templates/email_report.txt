@@ -1,9 +1,0 @@
-Hello from OCIM,
-
-I've sent today's share of emails to P&T and trail users.
-
-{% for template_name, recipients in sent_emails.items %}Email Name: {{ template_name }}
-Sent To:{% for email_address in recipients %}
-* {{ email_address }}{% endfor %}
-
-{% endfor %}

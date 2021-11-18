@@ -1,8 +1,0 @@
-import React from 'react';
-import { setupComponentForTesting } from "utils/testing";
-import { {{name}} } from './{{name}}';
-
-it('renders without crashing', () => {
-    const tree = setupComponentForTesting(<{{name}} />).toJSON();
-    expect(tree).toMatchSnapshot();
-});

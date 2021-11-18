@@ -1,3 +1,0 @@
-E.example.com
-F.example.com
-G.example.com
