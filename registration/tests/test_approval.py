@@ -30,6 +30,7 @@ from django.test import TestCase
 from instance.models.appserver import AppServer
 from registration.approval import ApplicationNotReady, accept_application, on_appserver_spawned
 from registration.models import BetaTestApplication
+from registration.tests.utils import BetaTestUserFactory
 
 
 # Test cases ##################################################################
@@ -126,9 +127,12 @@ class ApprovalTestCase(TestCase):
         Check if the the first Appserver is correctly activated even when
         spawned manually
         """
+
+        user = BetaTestUserFactory()
+
         appserver = mock.Mock(status=AppServer.Status.Running)
         instance = mock.Mock(first_activated=None)
-        application = mock.Mock(status=BetaTestApplication.PENDING)
+        application = mock.Mock(user=user, status=BetaTestApplication.PENDING)
 
         application.instance = instance
         instance.betatestapplication_set.first = lambda: application

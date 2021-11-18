@@ -217,7 +217,7 @@ class S3BucketInstanceMixin(models.Model):
                         "s3:*Object*"
                     ],
                     "Resource": ["arn:aws:s3:::{}/*".format(self.s3_bucket_name)]
-                }
+                },
             ]
         }
 
@@ -312,20 +312,37 @@ class S3BucketInstanceMixin(models.Model):
             )
         return self._s3_client
 
+    def _is_bucket_exists(self):
+        """
+        Returns True if bucket already exists, otherwise returns False.
+        """
+        try:
+            self.s3.head_bucket(Bucket=self.s3_bucket_name)
+        except ClientError as e:
+            if e.response.get('Error', {}).get('Code') == '404':
+                return False
+            else:
+                raise
+
+        return True
+
     def _create_bucket(self, max_tries=4, retry_delay=15, location=None):
         """
-        Create bucket, retry up to defined attempts if it fails
-        If you specify a location (e.g. 'EU', 'us-west-1'), this method will use it. If the location is
-        not specified, the value of the instance's 's3_region' field is used.
+        Create a bucket and retry up to defined attempts if it fails.
+
+        If the location is specified (e.g. 'EU', 'us-west-1'), this method will use it.
+        If the location is not specified, the value of the instance's 's3_region' field is used.
         """
         location_constraint = location or self.s3_region
         for attempt in range(1, max_tries + 1):
             try:
+                if self._is_bucket_exists():
+                    self.logger.info('Bucket %s already exists', self.s3_bucket_name)
+                    break
+
                 self._perform_create_bucket(location_constraint)
                 # Log success
-                self.logger.info(
-                    'Successfully created S3 bucket.',
-                )
+                self.logger.info('Successfully created S3 bucket.')
                 break
             except ClientError as e:
                 if e.response.get('Error', {}).get('Code') == 'BucketAlreadyOwnedByYou':
