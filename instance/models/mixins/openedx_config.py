@@ -521,7 +521,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_DOMAIN": ".{}".format(self.instance.domain),
                 "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_NAME": "cross-domain-cookie-mfe",
                 "EDXAPP_CORS_ORIGIN_WHITELIST": [
-                    "https://".format(self.instance.studio_domain),
+                    "https://{}".format(self.instance.studio_domain),
                     "https://app.{}".format(self.instance.domain)
                 ],
                 "EDXAPP_CSRF_TRUSTED_ORIGINS": [
@@ -540,7 +540,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "EDXAPP_LMS_WRITABLE_GRADEBOOK_URL": "https://app.{}/gradebook".format(self.instance.domain),
                 "EDXAPP_PROFILE_MICROFRONTEND_URL": "https://app.{}/profile/u/".format(self.instance.domain),
             })
-
 
         if settings.OPENEDX_ORACLEJDK_URL:
             template["oraclejdk_url"] = settings.OPENEDX_ORACLEJDK_URL
