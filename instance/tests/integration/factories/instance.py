@@ -79,8 +79,8 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     # or a release candidate tag will work.  We point both the edx-platform and the configuration
     # versions to the branch "integration" in our own forks.  These branches are based on the
     # corresponding openedx_release versions from upstream, but can contain custom modifications.
-    openedx_release = 'open-release/koa.3'
+    openedx_release = 'open-release/lilac.2'
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
-    configuration_version = 'integration-koa.3'
+    configuration_version = 'felipetrz/integration-lilac'
     edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
-    edx_platform_commit = 'opencraft-release/koa.3'
+    edx_platform_commit = 'opencraft-release/lilac.2'
