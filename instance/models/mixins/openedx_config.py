@@ -272,7 +272,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # would take precedence over EDXAPP_ENABLE_INSTRUCTOR_ANALYTICS.
             "EDXAPP_ENABLE_INSTRUCTOR_ANALYTICS": True,
             "EDXAPP_ENABLE_OAUTH2_PROVIDER": True,
-            "EDXAPP_ENABLE_SYSADMIN_DASHBOARD": True,
             "EDXAPP_FEATURES_EXTRA": {
                 "AUTH_USE_OPENID": False,
                 "CERTIFICATES_HTML_VIEW": True,
@@ -485,6 +484,63 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # See https://github.com/open-craft/cs_comments_service/pull/10
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["FORUM_VERSION"] = "opencraft-release/koa.3"
+        if self._is_openedx_release_in(['lilac']):
+            template["forum_source_repo"] = "https://github.com/edx/cs_comments_service.git"
+            template["FORUM_VERSION"] = "open-release/lilac.2"
+            # Configuration for MFEs which are enabled by default in lilac. See
+            # https://github.com/edx/configuration/blob/open-release/lilac.2/playbooks/roles/mfe_deployer/defaults/main.yml#L10-L27
+            template.update({
+                "MFES": [
+                    {
+                        "name": "profile",
+                        "repo": "frontend-app-profile",
+                        "public_path": "/profile/"
+                    },
+                    {
+                        "name": "gradebook",
+                        "repo": "frontend-app-gradebook",
+                        "public_path": "/gradebook/"
+                    },
+                    {
+                        "name": "account",
+                        "repo": "frontend-app-account",
+                        "public_path": "/account/"
+                    },
+                ],
+                "MFE_BASE": "app.{}".format(self.instance.domain),
+                "MFE_BASE_SCHEMA": "https",
+                "MFE_CREDENTIALS_BASE_URL":  "",
+                "MFE_DEPLOY_COMMON_HOSTNAME": "app.*",
+                "MFE_DEPLOY_NGINX_PORT": 80,
+                "MFE_DEPLOY_STANDALONE_NGINX": False,
+                "MFE_DEPLOY_VERSION": "open-release/lilac.2",
+                "MFE_SITE_NAME": self.instance.name,
+                # edxapp Configurations
+                "EDXAPP_ENABLE_CORS_HEADERS": True,
+                "EDXAPP_ENABLE_CROSS_DOMAIN_CSRF_COOKIE": True,
+                "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_DOMAIN": ".{}".format(self.instance.domain),
+                "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_NAME": "cross-domain-cookie-mfe",
+                "EDXAPP_CORS_ORIGIN_WHITELIST": [
+                    "https://".format(self.instance.studio_domain),
+                    "https://app.{}".format(self.instance.domain)
+                ],
+                "EDXAPP_CSRF_TRUSTED_ORIGINS": [
+                    "app.{}".format(self.instance.domain)
+                ],
+                "EDXAPP_SITE_CONFIGURATION": [
+                    {
+                        "values": {
+                            "ENABLE_ORDER_HISTORY_MICROFRONTEND": False,
+                            "ENABLE_ACCOUNT_MICROFRONTEND": True,
+                            "ENABLE_PROFILE_MICROFRONTEND": True
+                        }
+                    }
+                ],
+                "EDXAPP_ACCOUNT_MICROFRONTEND_URL": "https://app.{}/account".format(self.instance.domain),
+                "EDXAPP_LMS_WRITABLE_GRADEBOOK_URL": "https://app.{}/gradebook".format(self.instance.domain),
+                "EDXAPP_PROFILE_MICROFRONTEND_URL": "https://app.{}/profile/u/".format(self.instance.domain),
+            })
+
 
         if settings.OPENEDX_ORACLEJDK_URL:
             template["oraclejdk_url"] = settings.OPENEDX_ORACLEJDK_URL
