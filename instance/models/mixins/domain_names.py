@@ -31,7 +31,8 @@ DOMAIN_PREFIXES = [
     'studio',
     'preview',
     'discovery',
-    'ecommerce'
+    'ecommerce',
+    'app'
 ]
 
 # Functions ###################################################################
@@ -70,12 +71,14 @@ class DomainNameInstance(models.Model):
         'studio_domain': 'studio',
         'ecommerce_domain': 'ecommerce',
         'discovery_domain': 'discovery',
+        'mfe_domain': 'app'
     }
 
     nginx_domain_regex_attributes = {
         'studio_domain_nginx_regex': 'studio',
         'discovery_domain_nginx_regex': 'discovery',
         'ecommerce_domain_nginx_regex': 'ecommerce',
+        'mfe_domain_nginx_regex': 'app'
     }
 
     domain_attr_template = '{domain_type}_{domain_key}_domain'
@@ -95,12 +98,14 @@ class DomainNameInstance(models.Model):
     internal_studio_domain = models.CharField(max_length=100, blank=False, unique=True)
     internal_discovery_domain = models.CharField(max_length=100, blank=False, unique=True)
     internal_ecommerce_domain = models.CharField(max_length=100, blank=False, unique=True)
+    internal_mfe_domain = models.CharField(max_length=100, blank=False, unique=True)
 
     external_lms_domain = models.CharField(max_length=100, blank=True)
     external_lms_preview_domain = models.CharField(max_length=100, blank=True)
     external_studio_domain = models.CharField(max_length=100, blank=True)
     external_discovery_domain = models.CharField(max_length=100, blank=True)
     external_ecommerce_domain = models.CharField(max_length=100, blank=True)
+    external_mfe_domain = models.CharField(max_length=100, blank=True)
     extra_custom_domains = models.TextField(default='', blank=True, help_text=(
         "Add custom domain names, one per line. Domain names must be sub domains of the main LMS domain."
     ))
@@ -177,7 +182,7 @@ class DomainNameInstance(models.Model):
 
     def get_prefix_domain_names(self):
         """
-        Return an iterable of domain names using prefixes for Studio, Preview, Discovery, E-Commerce
+        Return an iterable of domain names using prefixes for Studio, Preview, Discovery, E-Commerce, MFEs
         """
         return ['{}-{}'.format(prefix, self.internal_lms_domain) for prefix in DOMAIN_PREFIXES]
 
@@ -191,11 +196,13 @@ class DomainNameInstance(models.Model):
             self.external_studio_domain,
             self.external_discovery_domain,
             self.external_ecommerce_domain,
+            self.external_mfe_domain,
             self.internal_lms_domain,
             self.internal_lms_preview_domain,
             self.internal_studio_domain,
             self.internal_discovery_domain,
             self.internal_ecommerce_domain,
+            self.internal_mfe_domain,
         ] + self.extra_custom_domains.splitlines()
         return [name for name in domain_names if name]
 
@@ -209,6 +216,7 @@ class DomainNameInstance(models.Model):
             self.internal_studio_domain,
             self.internal_discovery_domain,
             self.internal_ecommerce_domain,
+            self.internal_mfe_domain,
         ]
         if self.enable_prefix_domains_redirect:
             managed_domains += self.get_prefix_domain_names()
@@ -256,7 +264,7 @@ class DomainNameInstance(models.Model):
         """
         return u'{}heartbeat?extended'.format(self.url)
 
-    def save(self, **kwargs):  # pylint: disable=arguments-differ, too-many-branches, useless-suppression
+    def save(self, **kwargs):  # pylint: disable=arguments-differ, too-many-branches, useless-suppression; # noqa: MC0001
         """
         Set default values before saving the instance.
         """
@@ -270,6 +278,8 @@ class DomainNameInstance(models.Model):
             self.internal_discovery_domain = settings.DEFAULT_DISCOVERY_DOMAIN_PREFIX + self.internal_lms_domain
         if not self.internal_ecommerce_domain:
             self.internal_ecommerce_domain = settings.DEFAULT_ECOMMERCE_DOMAIN_PREFIX + self.internal_lms_domain
+        if not self.internal_mfe_domain:
+            self.internal_mfe_domain = settings.DEFAULT_MFE_DOMAIN_PREFIX + self.internal_lms_domain
 
         # Save for external domain, but only when present
         if self.external_lms_domain:
@@ -281,5 +291,7 @@ class DomainNameInstance(models.Model):
                 self.external_discovery_domain = settings.DEFAULT_DISCOVERY_DOMAIN_PREFIX + self.external_lms_domain
             if not self.external_ecommerce_domain:
                 self.external_ecommerce_domain = settings.DEFAULT_ECOMMERCE_DOMAIN_PREFIX + self.external_lms_domain
+            if not self.external_mfe_domain:
+                self.external_mfe_domain = settings.DEFAULT_MFE_DOMAIN_PREFIX + self.external_lms_domain
 
         super().save(**kwargs)
