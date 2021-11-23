@@ -43,6 +43,7 @@ from instance.gandi import GandiV5API
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceReference
+from instance.models.mixins.domain_names import DOMAIN_PREFIXES
 from instance.models.mixins.utilities import SensitiveDataFilter
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -744,7 +745,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Verify the load balancer configuration given in backend_map and config when the instance has prefix domains.
         """
-        default_backend_map = backend_map[:-4]
+        default_backend_map = backend_map[:-len(DOMAIN_PREFIXES)]
         default_config, redirect_config = config[:1], config[1:]
         [(backend, config_str)] = redirect_config
         self._check_load_balancer_configuration(default_backend_map, default_config, domain_names, ip_address)
