@@ -264,6 +264,7 @@ class DomainNameInstance(models.Model):
         """
         return u'{}heartbeat?extended'.format(self.url)
 
+    # Suppress McCabe complexity check MC0001 temporarily to avoid refactoring right now.
     def save(self, **kwargs):  # pylint: disable=arguments-differ, too-many-branches, useless-suppression; # noqa: MC0001
         """
         Set default values before saving the instance.
