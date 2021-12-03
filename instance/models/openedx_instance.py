@@ -134,7 +134,7 @@ class OpenEdXInstance(
         # for different services (e.g. xqueue) we don't want to use the maximum length here.
         allowed = string.ascii_letters + string.digits + '_'
         escaped = ''.join(char for char in name if char in allowed)
-        return truncate_name(escaped, length=50)
+        return truncate_name(escaped, length=40)
 
     def save(self, **kwargs):
         """

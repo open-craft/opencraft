@@ -74,8 +74,10 @@ def is_valid_domain_name(sub_domain):
     """
 
     regex = r'^[a-z0-9]([a-z0-9\-]+[a-z0-9])?$'
+    is_valid_regex = re.match(regex, sub_domain)
+    is_valid_length = len(sub_domain) <= 22
 
-    return re.match(regex, sub_domain)
+    return is_valid_regex & is_valid_length
 
 
 def instance_factory(**kwargs):
