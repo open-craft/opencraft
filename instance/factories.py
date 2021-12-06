@@ -28,6 +28,10 @@ import yaml
 
 from django.conf import settings
 
+from grove.gitlab import gitlab_client
+from grove.models.instance import GroveInstance
+from grove.models.repository import get_default_repository
+from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
 from instance import ansible
 from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.mixins.storage import StorageContainer
@@ -159,12 +163,24 @@ def production_instance_factory(**kwargs):
         configuration_version=settings.STABLE_CONFIGURATION_VERSION,
         openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
         configuration_extra_settings=extra_settings,
+    )
+
+    repository = get_default_repository()
+    project_id = repository.project_id
+    instance_id = repository.unleash_instance_id
+
+    if is_feature_enabled(gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
+        instance_kwargs.update({"repository": repository})
+
+        # Create Grove instance
+        return GroveInstance.objects.create(**instance_kwargs)
+
+    # Create OpenStack instance
+    instance_kwargs.update({
         # Allow production instances to use a different OpenStack instance flavor by default.
         # This allows using a larger instance flavor for production instances.
-        openstack_server_flavor=settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
-    )
-    instance_kwargs.update(kwargs)
-
-    # Create instance
+        "openstack_server_flavor": settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
+        **kwargs
+    })
     production_instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return production_instance
