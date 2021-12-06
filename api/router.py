@@ -25,6 +25,7 @@ REST Framework API - Router
 from rest_framework import routers
 
 from email_verification.api.v2.views import VerifyEmailViewset
+from grove.api.v1.views import GroveDeploymentAPIView
 from instance.api.instance import InstanceViewSet
 from instance.api.openedx_appserver import OpenEdXAppServerViewSet
 from instance.api.server import OpenStackServerViewSet
@@ -39,6 +40,8 @@ from registration.api.v2.views import (
 # Router ######################################################################
 
 v1_router = routers.DefaultRouter()
+
+v1_router.register(r'grove/deployments', GroveDeploymentAPIView, basename='grove-deployments')
 
 v1_router.register(r'instance', InstanceViewSet, basename='instance')
 v1_router.register(r'openedx_appserver', OpenEdXAppServerViewSet)
