@@ -73,11 +73,13 @@ def is_valid_domain_name(sub_domain):
     using the same regex as the BetaTestApplication.subdomain field validator.
     """
 
+    if len(sub_domain) > 22:
+        return None
+
     regex = r'^[a-z0-9]([a-z0-9\-]+[a-z0-9])?$'
     is_valid_regex = re.match(regex, sub_domain)
-    is_valid_length = len(sub_domain) <= 22
 
-    return is_valid_regex & is_valid_length
+    return is_valid_regex
 
 
 def instance_factory(**kwargs):
