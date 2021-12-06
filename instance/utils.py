@@ -236,6 +236,10 @@ def create_new_deployment(
     Create a new deployment for an existing instance, and start it asynchronously
     """
     # pylint: disable=cyclic-import, useless-suppression
+    from grove.gitlab import gitlab_client
+    from grove.models.deployment import GroveDeployment
+    from grove.models.instance import GroveInstance
+    from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
     from instance.models.deployment import DeploymentType
     from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
     from instance.tasks import start_deployment
@@ -246,6 +250,32 @@ def create_new_deployment(
 
     deployment_type = deployment_type or DeploymentType.unknown
     creator_profile = creator and creator.profile
+
+    # Check if the instance is managed by Grove
+    if isinstance(instance, GroveInstance):
+        project_id = instance.repository.project_id
+        instance_id = instance.repository.unleash_instance_id
+        # If the deployments are not enabled do not create a new deployment request. If the
+        # instance has a repository configured that means it was deployed at least once by
+        # Grove, hence OpenEdXInstance does not exist and creating an OpenEdXDeployment will
+        # result in a broken app server. If the feature must be rolled back, all the instances
+        # that were created by Grove should be revisited and new OpenEdXInstances should be
+        # created for them. The reason this deployment behavior is controlled by a feature switch
+        # is that we may need to roll back ASAP during the manual QA on production. Later, this
+        # setting should be cleaned up as part of a cleanup task when Grove is deployed 100%.
+        if not is_feature_enabled(gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
+            return
+
+        GroveDeployment.objects.create(
+            instance_id=instance.ref.id,
+            creator=creator_profile,
+            type=deployment_type,
+            overrides=changes,
+        )
+        # In case of grove deployments, no scheduling needed as that's handled
+        # by GitLab, therefore we need to return here.
+        return
+
     if cancel_pending:
         deployment = instance.get_latest_deployment()
         if deployment.status() in (DeploymentState.changes_pending, DeploymentState.provisioning):
