@@ -32,7 +32,6 @@ import time
 from enum import Enum
 from contextlib import contextmanager
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import channels.layers
@@ -40,9 +39,6 @@ from django.conf import settings
 import requests
 from asgiref.sync import async_to_sync
 from dictdiffer import diff
-
-if TYPE_CHECKING:
-    from registration.models import BetaTestApplication  # pylint: disable=cyclic-import, useless-suppression
 
 
 # Logging #####################################################################
@@ -171,11 +167,13 @@ def publish_data(data):
     async_to_sync(channel_layer.group_send)('ws', {'type': 'notification', 'message': data})
 
 
-def build_instance_config_diff(instance_config: 'BetaTestApplication'):
+def build_instance_config_diff(instance_config, instance=None):
     """
     Builds an configuration diff for the provided instance configuration.
+
+    :type instance_config: BetaTestApplication
     """
-    instance = instance_config.instance
+    instance = instance
     if not instance:
         instance = object()
     original_config = {}
@@ -224,6 +222,7 @@ class DjangoChoiceEnum(Enum):
         return list(prop.name for prop in cls)
 
 
+# pylint: disable=too-many-locals
 def create_new_deployment(
         instance,
         creator=None,
@@ -236,16 +235,47 @@ def create_new_deployment(
     Create a new deployment for an existing instance, and start it asynchronously
     """
     # pylint: disable=cyclic-import, useless-suppression
+    from django.contrib.contenttypes.models import ContentType
+    from grove.models.deployment import GroveDeployment
+    from grove.models.instance import GroveInstance
+    from grove.switchboard import use_grove_deployment
     from instance.models.deployment import DeploymentType
     from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
     from instance.tasks import start_deployment
+    from registration.models import BetaTestApplication
 
     changes = None
-    if instance.betatestapplication_set.exists():
-        changes = build_instance_config_diff(instance.betatestapplication_set.get())
+    if instance.betatestapplication.count() > 0:
+        instance_type = ContentType.objects.get_for_model(instance)
+        beta_test_application = BetaTestApplication.objects.filter(instance_type=instance_type, instance_id=instance.id)
+        changes = build_instance_config_diff(beta_test_application[0], instance)
 
     deployment_type = deployment_type or DeploymentType.unknown
     creator_profile = creator and creator.profile
+
+    # Check if the instance is managed by Grove
+    if isinstance(instance, GroveInstance):
+        # If the deployments are not enabled do not create a new deployment request. If the
+        # instance has a repository configured that means it was deployed at least once by
+        # Grove, hence OpenEdXInstance does not exist and creating an OpenEdXDeployment will
+        # result in a broken app server. If the feature must be rolled back, all the instances
+        # that were created by Grove should be revisited and new OpenEdXInstances should be
+        # created for them. The reason this deployment behavior is controlled by a feature switch
+        # is that we may need to roll back ASAP during the manual QA on production. Later, this
+        # setting should be cleaned up as part of a cleanup task when Grove is deployed 100%.
+        if not use_grove_deployment():
+            return
+
+        GroveDeployment.objects.create(
+            instance_id=instance.ref.id,
+            creator=creator_profile,
+            type=deployment_type,
+            overrides=changes,
+        )
+        # In case of grove deployments, no scheduling needed as that's handled
+        # by GitLab, therefore we need to return here.
+        return
+
     if cancel_pending:
         deployment = instance.get_latest_deployment()
         if deployment.status() in (DeploymentState.changes_pending, DeploymentState.provisioning):

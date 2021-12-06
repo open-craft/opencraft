@@ -93,7 +93,7 @@ def send_acknowledgement_email_on_instance_provisioning(sender, **kwargs):
 
     # The instance should be associate with at most one BetTestApplication
     # by design, thus we can selected the first record.
-    application = instance.betatestapplication_set.first()
+    application = instance.betatestapplication.first()
     is_appserver_healthy = appserver.status.is_healthy_state
 
     # Send email only for registered client application where application status is

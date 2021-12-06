@@ -23,7 +23,8 @@ from decimal import Decimal
 
 from django.contrib.postgres.forms.jsonb import JSONField
 from django.forms import DecimalField, Form, ModelChoiceField, ValidationError
-
+from grove.models.instance import GroveInstance
+from grove.switchboard import use_grove_deployment
 from instance.models.openedx_instance import OpenEdXInstance
 
 
@@ -44,12 +45,21 @@ class ConversionForm(Form):
     """
     Form to handle and validate the conversion data to be sent to Matomo.
     """
-    instance = CustomInstanceChoiceField(
-        queryset=OpenEdXInstance.objects.filter(
+    if use_grove_deployment():
+        instance_queryset = GroveInstance.objects.filter(
             betatestapplication__isnull=False,
             ref_set__is_archived=False,
             successfully_provisioned=True
-        ),
+        )
+    else:
+        # Use OpenEdxInstance as default
+        instance_queryset = OpenEdXInstance.objects.filter(
+            betatestapplication__isnull=False,
+            ref_set__is_archived=False,
+            successfully_provisioned=True
+        )
+    instance = CustomInstanceChoiceField(
+        queryset=instance_queryset,
         help_text='Select the instance to enter the conversion data for.'
     )
     revenue = DecimalField(

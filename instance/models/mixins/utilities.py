@@ -452,7 +452,7 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
         DeploymentType.pr.name
     ]
 
-    is_registered_by_client = instance.betatestapplication_set.exists()
+    is_registered_by_client = instance.betatestapplication.count() > 0
     is_periodic_builds_enabled = instance.periodic_builds_enabled
 
     # Only sending critical alerts for failures in registered clients' instances, not in test/sandboxes

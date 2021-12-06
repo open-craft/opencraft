@@ -30,6 +30,7 @@ from rest_framework.permissions import AllowAny
 from api.auth import JWTAuthToken, JwtTokenRefresh, JwtTokenVerify
 from api.router import v1_router, v2_router
 from opencraft.swagger import api_info
+from grove.api.v1.views import gitlab_webhook
 
 
 # URL Patterns ################################################################
@@ -61,4 +62,5 @@ urlpatterns = [
     url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=10), name='schema-json'),
     url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=10), name='schema-swagger-ui'),
     url(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=10), name='schema-redoc'),
+    url(r'^webhook/$', gitlab_webhook, name='grove_webhook'),
 ]

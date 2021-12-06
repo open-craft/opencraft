@@ -556,7 +556,7 @@ class ReportTaskTestCase(TestCase):
             email=str(self.instance_counter) + 'test@example.com'
         )
         instance = OpenEdXInstanceFactory(
-            successfully_provisioned=True, betatestapplication=BetaTestApplication()
+            successfully_provisioned=True
         )
         make_test_appserver(instance=instance, is_active=True)
         BetaTestApplication.objects.create(

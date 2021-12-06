@@ -27,11 +27,14 @@ import ddt
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
+from grove.models.instance import GroveInstance
 
 from instance.factories import instance_factory
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import create_user_and_profile
 from registration.models import (
     BetaTestApplication,
+    get_instance_model,
     validate_available_external_domain,
     validate_available_subdomain,
     validate_subdomain_is_not_blacklisted,
@@ -257,3 +260,26 @@ class ValidatorTestCase(TestCase):
 
         self.assertEqual(exc.exception.message, error_message)
         self.assertEqual(exc.exception.code, 'reserved')
+
+    def test_get_instance_model_default(self):
+        """
+        Validate that the default instance model is OpenEdXInstance
+        """
+        default_instance_model = get_instance_model()
+        self.assertEqual(default_instance_model, OpenEdXInstance)
+
+    def test_get_instance_model_default_with_instance(self):
+        """
+        Validate that the instance model returns correct value for instance
+        """
+        instance = instance_factory(sub_domain="testdomain")
+        instance_model = get_instance_model(instance=instance)
+        self.assertEqual(instance_model, OpenEdXInstance)
+
+    @override_settings(USE_GROVE_INSTANCE=True)
+    def test_get_instance_model_for_grove(self):
+        """
+        Validate that the default instance model is GroveInstance
+        """
+        default_instance_model = get_instance_model()
+        self.assertEqual(default_instance_model, GroveInstance)

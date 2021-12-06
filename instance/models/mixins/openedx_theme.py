@@ -204,7 +204,7 @@ class OpenEdXThemeMixin(models.Model):
 
         # application can be None (for instances not created through the form) or a
         # BetaTestApplication object. first() returns None or object.
-        application = self.betatestapplication_set.first()
+        application = self.betatestapplication.first()
 
         if not application:
             # Instance wasn't created from application form, so no colors will be set or changed

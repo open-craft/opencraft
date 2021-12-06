@@ -31,6 +31,7 @@ from django.utils.text import slugify
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, ValidationError
@@ -45,6 +46,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
+
+from grove.models.instance import GroveInstance
 
 from instance.models.deployment import DeploymentType
 from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
@@ -152,7 +155,7 @@ class NotificationsViewSet(GenericViewSet):
 
         user = self.request.user
 
-        applications = BetaTestApplication.objects.select_related('instance')
+        applications = BetaTestApplication.objects.select_related('instance_type')
 
         if user.is_staff:
             applications = applications.all()
@@ -214,8 +217,9 @@ class NotificationsViewSet(GenericViewSet):
 
         application = self.get_application()
         deployments = self.get_queryset(application)
+        instance = application.instance
 
-        undeployed_changes = build_instance_config_diff(application)
+        undeployed_changes = build_instance_config_diff(application, instance)
 
         notifications = []
         for deployment in deployments:
@@ -238,7 +242,7 @@ class NotificationsViewSet(GenericViewSet):
         # we manually change its status.
         last_notification = notifications[0]
         if last_notification['status'] == DeploymentState.healthy.name:
-            undeployed_changes = build_instance_config_diff(application)
+            undeployed_changes = build_instance_config_diff(application, instance)
             if undeployed_changes:
                 last_notification['status'] = DeploymentState.changes_pending
 
@@ -573,11 +577,11 @@ class OpenEdXInstanceConfigViewSet(
         if not user.is_authenticated:
             return BetaTestApplication.objects.none()
         elif user.is_staff:
-            return BetaTestApplication.objects.all().select_related("instance")
+            return BetaTestApplication.objects.all().select_related("instance_type")
         else:
             return BetaTestApplication.objects.filter(
                 user=self.request.user
-            ).select_related("instance")
+            ).select_related("instance_type")
 
 
 class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
@@ -596,7 +600,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         For a regular user it should return a single object (for now).
         """
         user: User = self.request.user
-        queryset = BetaTestApplication.objects.select_related("instance")
+        queryset = BetaTestApplication.objects.select_related("instance_type")
 
         if not user.is_authenticated:
             return queryset.none()
@@ -714,7 +718,10 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         """
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def retrieve(self, request, *args, **kwargs):
+    # Pylint has a bug showing useless-suppression if too-many-branches defined
+    # otherwise it shows that too-many-branches are violated.
+    # pylint: disable=useless-suppression
+    def retrieve(self, request, *args, **kwargs):  # pylint: disable=too-many-branches
         """
         Retrieves the deployment status for a given betatest instance.
 
@@ -723,22 +730,29 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         """
         application = self.get_object()
         instance = application.instance
-        undeployed_changes = build_instance_config_diff(application)
+        undeployed_changes = build_instance_config_diff(application, instance)
         deployed_changes = None
         deployment_type = None
 
-        if (not instance or
-                not instance.get_latest_deployment() or
-                not instance.successfully_provisioned):
-            # Set to preparing if no existing deployments or provisioned appservers found
-            deployment_status = DeploymentState.preparing
+        if (not instance or not instance.get_latest_deployment()):
+            if isinstance(instance, GroveInstance):
+                deployment_status = DeploymentState.preparing
+            elif (not instance or not instance.successfully_provisioned):
+                # Set to preparing if no existing deployments or provisioned appservers found
+                deployment_status = DeploymentState.preparing
         else:
             deployment = instance.get_latest_deployment()
-            deployment_status = deployment.status()
+            if isinstance(instance, GroveInstance):
+                deployment_status = deployment.check_status()
+            else:
+                deployment_status = deployment.status()
+
             if deployment_status == DeploymentState.healthy and undeployed_changes:
                 deployment_status = DeploymentState.changes_pending
+
             deployment_type = deployment.type
-            deployed_changes = deployment.changes
+            if isinstance(deployment, OpenEdXDeployment):
+                deployed_changes = deployment.changes
 
         data = {
             'undeployed_changes': undeployed_changes,
@@ -763,7 +777,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         application = self.get_object()
         instance = application.instance
 
-        if not instance.get_active_appservers().exists():
+        if not isinstance(instance, GroveInstance) and not instance.get_active_appservers().exists():
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
                 data={

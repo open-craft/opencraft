@@ -24,13 +24,15 @@ Instance app - Factory functions for creating instances
 
 import logging
 import re
+from typing import Union
 import yaml
 
 from django.conf import settings
 
+from grove.models.instance import GroveInstance
+from grove.models.repository import get_default_repository
+from grove.switchboard import use_grove_deployment
 from instance import ansible
-from instance.models.database_server import MySQLServer, MongoDBServer
-from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
 
 
@@ -45,24 +47,9 @@ def _check_environment():
     """
     Check environment and report potential problems for production instances
     """
-    if settings.INSTANCE_STORAGE_TYPE == StorageContainer.S3_STORAGE and \
-            not(settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
-        logger.warning(
-            "AWS support is currently enabled. Add AWS_ACCESS_KEY_ID and "
-            "AWS_SECRET_ACCESS_KEY settings or adjust INSTANCE_STORAGE_TYPE setting."
-        )
-        return False
-    if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:
-        logger.warning(
-            "No MySQL servers configured, and default URL for external MySQL database is missing."
-            "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
-        )
-        return False
-    if not MongoDBServer.objects.exists() and settings.DEFAULT_INSTANCE_MONGO_URL is None:
-        logger.warning(
-            "No MongoDB servers configured, and default URL for external MongoDB database is missing."
-            "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."
-        )
+    grove_repo = get_default_repository()
+    if not grove_repo:
+        logger.warning("Default Grove repository is not available!")
         return False
     return True
 
@@ -107,11 +94,11 @@ def instance_factory(**kwargs):
     return instance
 
 
-def production_instance_factory(**kwargs):
+def production_instance_factory(**kwargs) -> Union[GroveInstance, OpenEdXInstance]:
     """
     Factory function for creating production instances.
 
-    Returns a newly created OpenEdXInstance.
+    Returns a new GroveInstance or OpenEdXInstance.
 
     Callers can use keyword arguments to pass in non-default values
     for any field that is defined on the OpenEdXInstance model.
@@ -159,12 +146,16 @@ def production_instance_factory(**kwargs):
         configuration_version=settings.STABLE_CONFIGURATION_VERSION,
         openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
         configuration_extra_settings=extra_settings,
-        # Allow production instances to use a different OpenStack instance flavor by default.
-        # This allows using a larger instance flavor for production instances.
-        openstack_server_flavor=settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
     )
+
+    repository = get_default_repository()
     instance_kwargs.update(kwargs)
 
-    # Create instance
+    if use_grove_deployment():
+        instance_kwargs.update({"repository": repository})
+
+        # Create Grove instance
+        return GroveInstance.objects.create(**instance_kwargs)
+
     production_instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return production_instance

@@ -23,6 +23,8 @@ Instance serializers (API representation)
 # Imports #####################################################################
 
 from rest_framework import serializers
+from grove.models.instance import GroveInstance
+from grove.serializers import GroveInstanceSerializer
 
 from instance.models.instance import InstanceReference, Instance, InstanceTag
 from instance.models.openedx_instance import OpenEdXInstance
@@ -87,6 +89,8 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
         # Use the correct serializer for this type of Instance:
         if isinstance(instance, OpenEdXInstance):
             serializer = OpenEdXInstanceSerializer
+        elif isinstance(instance, GroveInstance):
+            serializer = GroveInstanceSerializer
         else:
             raise NotImplementedError("No serializer enabled for that Instance type.")
 

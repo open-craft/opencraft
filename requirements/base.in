@@ -49,6 +49,7 @@ mccabe==0.6.1
 mysqlclient==1.4.2.post1
 openstacksdk
 os-client-config==1.32.0
+UnleashClient==4.4.1
 Pillow
 pip-tools==5.5.0
 psycopg2-binary==2.8.3
