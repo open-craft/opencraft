@@ -295,6 +295,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         # Favicon is in a line like
         # <link rel="icon" type="image/x-icon" href="/static/images/favicon.eb143b51964d.ico"/>
+        print(server_html)
         favicon_extractor = re.search(r'<link\s+rel="icon"\s+type="image/x-icon"'
                                       r'\s+href="(/static/images/favicon\.[a-z0-9]+\.ico)"'
                                       r'\s*/>',
