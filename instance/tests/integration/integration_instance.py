@@ -294,10 +294,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self._assert_theme_logo_in_html(instance, application, logo_url)
 
         # Favicon is in a line like
-        # <link rel="icon" type="image/x-icon" href="/static/images/favicon.eb143b51964d.ico"/>
-        print(server_html)
+        # <link rel="icon" type="image/x-icon" href="/static/simple-theme/images/favicon.eb143b51964d.ico"/>
         favicon_extractor = re.search(r'<link\s+rel="icon"\s+type="image/x-icon"'
-                                      r'\s+href="(/static/images/favicon\.[a-z0-9]+\.ico)"'
+                                      r'\s+href="(/static/simple-theme/images/favicon\.[a-z0-9]+\.ico)"'
                                       r'\s*/>',
                                       server_html)
         self.assertTrue(favicon_extractor)
