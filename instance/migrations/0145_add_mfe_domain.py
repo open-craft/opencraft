@@ -29,10 +29,5 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, max_length=100),
             preserve_default=False,
         ),
-        migrations.RunPython(set_internal_mfe_domain, reverse_code=migrations.RunPython.noop),
-        migrations.AlterField(
-            model_name='openedxinstance',
-            name='internal_mfe_domain',
-            field=models.CharField(max_length=100, unique=True),
-        )
+        migrations.RunPython(set_internal_mfe_domain, reverse_code=migrations.RunPython.noop)
     ]
