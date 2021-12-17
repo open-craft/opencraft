@@ -71,7 +71,7 @@ class DomainNameInstance(models.Model):
         'studio_domain': 'studio',
         'ecommerce_domain': 'ecommerce',
         'discovery_domain': 'discovery',
-        'mfe_domain': 'app'
+        'mfe_domain': 'mfe'
     }
 
     nginx_domain_regex_attributes = {
