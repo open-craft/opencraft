@@ -71,14 +71,13 @@ class DomainNameInstance(models.Model):
         'studio_domain': 'studio',
         'ecommerce_domain': 'ecommerce',
         'discovery_domain': 'discovery',
-        'mfe_domain': 'mfe'
+        'mfe_domain': 'mfe',
     }
 
     nginx_domain_regex_attributes = {
         'studio_domain_nginx_regex': 'studio',
         'discovery_domain_nginx_regex': 'discovery',
         'ecommerce_domain_nginx_regex': 'ecommerce',
-        'mfe_domain_nginx_regex': 'app'
     }
 
     domain_attr_template = '{domain_type}_{domain_key}_domain'
