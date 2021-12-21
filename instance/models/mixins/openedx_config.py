@@ -520,9 +520,11 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "EDXAPP_ENABLE_CROSS_DOMAIN_CSRF_COOKIE": True,
                 "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_DOMAIN": ".{}".format(self.instance.domain),
                 "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_NAME": "cross-domain-cookie-mfe",
+                # NOTE: In maple and later, the URLs will have to be prefixed with https://,
+                # but for lilac, the scheme has to be absent for CORS to work.
                 "EDXAPP_CORS_ORIGIN_WHITELIST": [
-                    "https://{}".format(self.instance.studio_domain),
-                    "https://{}".format(self.instance.mfe_domain)
+                    self.instance.studio_domain,
+                    self.instance.mfe_domain
                 ],
                 "EDXAPP_CSRF_TRUSTED_ORIGINS": [
                     self.instance.mfe_domain
