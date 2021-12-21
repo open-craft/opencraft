@@ -43,6 +43,7 @@ from instance.gandi import GandiV5API
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceReference
+from instance.models.mixins.domain_names import DOMAIN_PREFIXES
 from instance.models.mixins.utilities import SensitiveDataFilter
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -245,6 +246,7 @@ class OpenEdXInstanceTestCase(TestCase):
             dict(name='studio.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='ecommerce.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='discovery.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='app.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
         ])
 
         appserver = instance.appserver_set.get(pk=appserver_id)
@@ -743,7 +745,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Verify the load balancer configuration given in backend_map and config when the instance has prefix domains.
         """
-        default_backend_map = backend_map[:-4]
+        default_backend_map = backend_map[:-len(DOMAIN_PREFIXES)]
         default_config, redirect_config = config[:1], config[1:]
         [(backend, config_str)] = redirect_config
         self._check_load_balancer_configuration(default_backend_map, default_config, domain_names, ip_address)
@@ -767,6 +769,7 @@ class OpenEdXInstanceTestCase(TestCase):
             "studio.test.load_balancer.example.com",
             "ecommerce.test.load_balancer.example.com",
             "discovery.test.load_balancer.example.com",
+            "app.test.load_balancer.example.com",
         ]
         # Test configuration for preliminary page
         backend_map, config = instance.get_load_balancer_configuration()
@@ -813,7 +816,8 @@ class OpenEdXInstanceTestCase(TestCase):
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
                                           external_ecommerce_domain='ecom.myexternal.org',
-                                          external_discovery_domain='catalog.myexternal.org')
+                                          external_discovery_domain='catalog.myexternal.org',
+                                          external_mfe_domain='mfe.myexternal.org')
         instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
         instance.save()
         domain_names = [
@@ -822,11 +826,13 @@ class OpenEdXInstanceTestCase(TestCase):
             'studio.test.load_balancer.opencraft.co.uk',
             'ecommerce.test.load_balancer.opencraft.co.uk',
             'discovery.test.load_balancer.opencraft.co.uk',
+            'app.test.load_balancer.opencraft.co.uk',
             'courses.myexternal.org',
             'preview.myexternal.org',
             'studio.myexternal.org',
             'ecom.myexternal.org',
             'catalog.myexternal.org',
+            'mfe.myexternal.org',
         ]
         backend_map, config = instance.get_load_balancer_configuration()
 

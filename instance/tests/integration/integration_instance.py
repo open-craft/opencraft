@@ -332,11 +332,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             instance.external_studio_domain,
             instance.external_discovery_domain,
             instance.external_ecommerce_domain,
+            instance.external_mfe_domain,
             instance.internal_lms_domain,
             instance.internal_lms_preview_domain,
             instance.internal_studio_domain,
             instance.internal_discovery_domain,
             instance.internal_ecommerce_domain,
+            instance.internal_mfe_domain,
             'custom1.{lms_domain}'.format(lms_domain=instance.internal_lms_domain),
             'custom2.{lms_domain}'.format(lms_domain=instance.internal_lms_domain),
         ]

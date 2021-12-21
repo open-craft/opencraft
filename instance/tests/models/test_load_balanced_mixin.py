@@ -55,13 +55,15 @@ class LoadBalancedInstanceTestCase(TestCase):
         'preview.test.dns',
         'studio.test.dns',
         'ecommerce.test.dns',
-        'discovery.test.dns'
+        'discovery.test.dns',
+        'app.test.dns',
     ]
     dns_domains_with_prefix_domains = dns_domains + [
         'studio-test.dns',
         'preview-test.dns',
         'discovery-test.dns',
         'ecommerce-test.dns',
+        'app-test.dns',
     ]
 
     def _verify_dns_records(self, instance, domain, expected_domains=()):
