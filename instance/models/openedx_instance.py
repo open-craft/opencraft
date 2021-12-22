@@ -130,7 +130,7 @@ class OpenEdXInstance(
         """
         current_database_name = self.current_database_name
 
-        if current_database_name is not None and current_database_name != '':
+        if current_database_name is not None and current_database_name == '':
             name = self.internal_lms_domain.replace('.', '_')
             # Escape all non-ascii characters and truncate to 50 chars.
             # The maximum length for the name of a MySQL database is 64 characters.
