@@ -77,7 +77,7 @@ class OpenEdXInstance(
     # Most settings/fields are inherited from mixins
 
     successfully_provisioned = models.BooleanField(default=False)
-    current_database_name = models.CharField(max_length=60, default='')
+    current_database_name = models.CharField(blank=True, max_length=60, default='')
 
     def __init__(self, *args, **kwargs):
         """Init."""
@@ -130,7 +130,7 @@ class OpenEdXInstance(
         """
         current_database_name = self.current_database_name
 
-        if current_database_name is not None or current_database_name != '':
+        if current_database_name is not None and current_database_name != '':
             name = self.internal_lms_domain.replace('.', '_')
             # Escape all non-ascii characters and truncate to 50 chars.
             # The maximum length for the name of a MySQL database is 64 characters.
