@@ -140,7 +140,7 @@ class OpenEdXInstance(
             escaped = ''.join(char for char in name if char in allowed)
             current_database_name = truncate_name(escaped, length=40)
             self.current_database_name = current_database_name
-            self.save 
+            self.save()
             return current_database_name
         else:
             return current_database_name
