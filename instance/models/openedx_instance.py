@@ -77,6 +77,7 @@ class OpenEdXInstance(
     # Most settings/fields are inherited from mixins
 
     successfully_provisioned = models.BooleanField(default=False)
+    current_database_name = models.CharField(max_length=60, default='')
 
     def __init__(self, *args, **kwargs):
         """Init."""
@@ -127,14 +128,22 @@ class OpenEdXInstance(
         """
         The database name used for external databases/storages, if any.
         """
-        name = self.internal_lms_domain.replace('.', '_')
-        # Escape all non-ascii characters and truncate to 50 chars.
-        # The maximum length for the name of a MySQL database is 64 characters.
-        # But since we add suffixes to database_name to generate unique database names
-        # for different services (e.g. xqueue) we don't want to use the maximum length here.
-        allowed = string.ascii_letters + string.digits + '_'
-        escaped = ''.join(char for char in name if char in allowed)
-        return truncate_name(escaped, length=40)
+        current_database_name = self.current_database_name
+
+        if current_database_name is not None or current_database_name != '':
+            name = self.internal_lms_domain.replace('.', '_')
+            # Escape all non-ascii characters and truncate to 50 chars.
+            # The maximum length for the name of a MySQL database is 64 characters.
+            # But since we add suffixes to database_name to generate unique database names
+            # for different services (e.g. xqueue) we don't want to use the maximum length here.
+            allowed = string.ascii_letters + string.digits + '_'
+            escaped = ''.join(char for char in name if char in allowed)
+            current_database_name = truncate_name(escaped, length=40)
+            self.current_database_name = current_database_name
+            self.save 
+            return current_database_name
+        else:
+            return current_database_name
 
     def save(self, **kwargs):
         """
