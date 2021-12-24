@@ -227,7 +227,7 @@ class S3BucketInstanceMixin(models.Model):
         Return bucket name truncated to 50 characters
         """
         return truncate_name(
-            '{}-{}'.format(settings.AWS_S3_BUCKET_PREFIX, self.generate_database_name().replace('_', '-')),
+            '{}-{}'.format(settings.AWS_S3_BUCKET_PREFIX, self.database_name.replace('_', '-')),
             length=50
         )
 
@@ -237,7 +237,7 @@ class S3BucketInstanceMixin(models.Model):
         Return IAM username truncated to 50 characters
         """
         return truncate_name(
-            '{}-{}'.format(settings.AWS_IAM_USER_PREFIX, self.generate_database_name()),
+            '{}-{}'.format(settings.AWS_IAM_USER_PREFIX, self.database_name),
             length=50
         )
 
