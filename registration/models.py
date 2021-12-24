@@ -104,6 +104,7 @@ def validate_available_external_domain(value):
         | Q(external_studio_domain__endswith=domain)
         | Q(external_discovery_domain__endswith=domain)
         | Q(external_ecommerce_domain__endswith=domain)
+        | Q(external_mfe_domain__endswith=domain)
         # No need to check for subdomain, since it will match anyway
         | Q(extra_custom_domains__contains=domain)
     ).exists()
