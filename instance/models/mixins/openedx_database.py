@@ -70,7 +70,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         The mysql database name for this instance
         """
-        return self.database_name
+        return self.generate_database_name()
 
     @property
     def mysql_database_names(self):
@@ -144,14 +144,14 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         The name of the main external mongo database
         """
-        return self.database_name
+        return self.generate_database_name()
 
     @property
     def forum_database_name(self):
         """
         The name of the external database used for forums
         """
-        return '{0}_forum'.format(self.database_name)
+        return '{0}_forum'.format(self.generate_database_name())
 
     @property
     def mongo_database_names(self):

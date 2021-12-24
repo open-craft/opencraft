@@ -39,7 +39,7 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         The name of the Swift container used by the instance.
         """
-        return self.database_name
+        return self.generate_database_name()
 
     @property
     def swift_container_names(self):

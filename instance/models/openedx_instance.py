@@ -77,6 +77,7 @@ class OpenEdXInstance(
     # Most settings/fields are inherited from mixins
 
     successfully_provisioned = models.BooleanField(default=False)
+    database_name = models.CharField(blank=True, max_length=60, default='')
 
     def __init__(self, *args, **kwargs):
         """Init."""
@@ -122,8 +123,7 @@ class OpenEdXInstance(
             return deployment.openedxdeployment
         return None
 
-    @property
-    def database_name(self):
+    def generate_database_name(self):
         """
         The database name used for external databases/storages, if any.
         """
@@ -153,6 +153,9 @@ class OpenEdXInstance(
 
         if self.random_prefix is not None:
             self.mysql_user = self.random_prefix
+
+        if self.database_name is None or self.database_name == '':
+            self.database_name = generate_database_name()
 
         # The instance is newly created
         if not self.pk:
