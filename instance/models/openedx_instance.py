@@ -155,7 +155,7 @@ class OpenEdXInstance(
             self.mysql_user = self.random_prefix
 
         if self.database_name is None or self.database_name == '':
-            self.database_name = generate_database_name()
+            self.database_name = self.generate_database_name()
 
         # The instance is newly created
         if not self.pk:
