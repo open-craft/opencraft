@@ -505,7 +505,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Ensure failures that are ignored aren't reflected in the instance
         """
-        heartbeat_active.return_value = True
         get_playbooks.return_value = [
             Playbook(
                 source_repo=os.path.join(os.path.dirname(__file__), 'ansible'),
@@ -525,6 +524,14 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             name='Integration - test_ansible_failignore',
             configuration_playbook_name='playbooks/failignore.yml'
         )
+
+        # Mock the heartbeat check to succeed as soon as the server's status switches to Ready.
+        def is_heartbeat_active():
+            appserver = instance.appserver_set.first()
+            return appserver and appserver.server.status == ServerStatus.Ready
+
+        heartbeat_active.side_effect = is_heartbeat_active
+
         create_new_deployment(instance, mark_active_on_success=True, num_attempts=1)
         self.assert_server_ready(instance)
 
