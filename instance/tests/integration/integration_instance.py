@@ -332,11 +332,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             instance.external_studio_domain,
             instance.external_discovery_domain,
             instance.external_ecommerce_domain,
+            instance.external_mfe_domain,
             instance.internal_lms_domain,
             instance.internal_lms_preview_domain,
             instance.internal_studio_domain,
             instance.internal_discovery_domain,
             instance.internal_ecommerce_domain,
+            instance.internal_mfe_domain,
             'custom1.{lms_domain}'.format(lms_domain=instance.internal_lms_domain),
             'custom2.{lms_domain}'.format(lms_domain=instance.internal_lms_domain),
         ]
@@ -503,7 +505,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Ensure failures that are ignored aren't reflected in the instance
         """
-        heartbeat_active.return_value = True
         get_playbooks.return_value = [
             Playbook(
                 source_repo=os.path.join(os.path.dirname(__file__), 'ansible'),
@@ -523,6 +524,14 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             name='Integration - test_ansible_failignore',
             configuration_playbook_name='playbooks/failignore.yml'
         )
+
+        # Mock the heartbeat check to succeed as soon as the server's status switches to Ready.
+        def is_heartbeat_active():
+            appserver = instance.appserver_set.first()
+            return appserver and appserver.server.status == ServerStatus.Ready
+
+        heartbeat_active.side_effect = is_heartbeat_active
+
         create_new_deployment(instance, mark_active_on_success=True, num_attempts=1)
         self.assert_server_ready(instance)
 
