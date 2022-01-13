@@ -77,8 +77,8 @@ app.factory('WebSocketClient', function() {
 
 // Controllers ////////////////////////////////////////////////////////////////
 
-app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', '$timeout',
-    function ($scope, $state, OpenCraftAPI, WebSocketClient, $timeout) {
+app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', '$timeout', '$location',
+    function ($scope, $state, OpenCraftAPI, WebSocketClient, $timeout, $location) {
 
         $scope.init = function() {
             $scope.loading = true;
@@ -103,7 +103,7 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', 
             $scope.loading = true; // Display loading message
 
             console.log('Updating instance list');
-            return OpenCraftAPI.all("instance").getList().then(function(instanceList) {
+            return OpenCraftAPI.all("instance").getList($location.search()).then(function(instanceList) {
                 $scope.instanceList = instanceList;
                 console.log('Updated instance list:', instanceList);
             }, function(response) {

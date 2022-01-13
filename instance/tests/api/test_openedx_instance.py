@@ -28,10 +28,13 @@ import ddt
 from django.conf import settings
 from rest_framework import status
 
+from instance.models.deployment import DeploymentType
+from instance.models.instance import InstanceTag
+from instance.models.appserver import Status as AppServerStatus
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.models.factories.openedx_appserver import make_test_appserver
-
+from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
+from instance.tests.utils import patch_services
 
 # Tests #######################################################################
 
@@ -280,3 +283,132 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('status_description', 'App server never got up and running '
                        '(something went wrong when trying to build new VM)'), instance_data)
         self.assertEqual(response.data['active_appservers'][0]['status'], 'error')
+
+    def test_instance_list_filter_on_name(self, mock_consul):
+        """
+        GET - instance list - it should be possible to filter on name
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com', name='test.com')
+        instance.ref.owner = self.organization2
+        instance.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.save()
+
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?name=test.com')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance.ref.id)
+
+    def test_instance_list_filter_on_notes(self, mock_consul):
+        """
+        GET - instance list - it should be possible to filter on notes
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com', name='test.com')
+        instance.ref.owner = self.organization2
+        instance.ref.notes = 'test.com notes'
+        instance.ref.save()
+        instance.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.notes = 'test2.com notes'
+        instance2.ref.save()
+        instance2.save()
+
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?notes=test2')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance2.ref.id)
+
+    def test_instance_list_filter_on_deployment_type(self, mock_consul):
+        """
+        GET - instance list - it should be possible to filter on deployment type
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com', name='test.com')
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+        instance.save()
+        make_test_deployment(instance=instance, deployment_type=DeploymentType.pr)
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+        instance2.save()
+        make_test_deployment(instance=instance2, deployment_type=DeploymentType.batch)
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get(f'/api/v1/instance/?deployment_type={DeploymentType.pr}')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance.ref.id)
+
+    def test_instance_list_filter_on_openedx_release(self, mock_consul):
+        """
+        GET - instance list - it should be possible to filter on the OpenEdx release
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com', name='test.com', openedx_release='maple')
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+        instance.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com', openedx_release='lilac')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+        instance2.save()
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?openedx_release=lilac')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance2.ref.id)
+
+    def test_instance_list_filter_on_tag(self, mock_consul):
+        """
+        GET - instance list - it should be possible to filter on any of the instance
+        tags
+        """
+        tag1, _ = InstanceTag.objects.get_or_create(name='fast')
+        tag2, _ = InstanceTag.objects.get_or_create(name='slow')
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.com', name='test.com')
+        instance.tags.add(tag1)
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+        instance.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.tags.add(tag2)
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+        instance2.save()
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?tag=slow')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance2.ref.id)
+
+    @patch_services
+    def test_instance_list_filter_on_status(self, mock_consul, patch_services):
+        """
+        GET - instance list - it should be possible to filter on any of the
+        app server statuses
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com', name='test.com')
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+
+        instance.spawn_appserver() # Server state is Running
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+
+        appserver2_id = instance2.spawn_appserver()
+        instance2.appserver_set.update(_status=AppServerStatus.New.state_id)
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?status=running')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance.ref.id)
