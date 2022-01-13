@@ -96,8 +96,9 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
             # The .distinct is important, because an instance reference can
             # have multiple appservers with the same status. In that case
             # there'll be duplicate rows.
-            return queryset.filter(openedxappserver_set__value=value).distinct()
+            return queryset.filter(openedxappserver_set___status=value).distinct()
         return queryset
+
 
     def _filter_openedx_release(self, queryset, value):
         if value:

@@ -30,9 +30,11 @@ from rest_framework import status
 
 from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceTag
+from instance.models.appserver import Status as AppServerStatus
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
+from instance.tests.utils import patch_services
 
 # Tests #######################################################################
 
@@ -371,3 +373,27 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/?tag=slow')
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['id'], instance2.ref.id)
+
+    @patch_services
+    def test_instance_list_filter_on_status(self, mock_consul, patch_services):
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.com', name='test.com')
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+
+        instance.spawn_appserver() # Server state is Running
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+
+        appserver2_id = instance2.spawn_appserver()
+        instance2.appserver_set.update(_status=AppServerStatus.New.state_id)
+        
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?status=running')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance.ref.id)
+
+
+    
