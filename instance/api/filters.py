@@ -101,7 +101,8 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
 
     def _filter_openedx_release(self, queryset, value):
         if value:
-            return queryset.filter(openedxappserver_set__openedx_release=value).distinct()
+            instances = OpenEdXInstance.objects.filter(openedx_release__iexact=value)
+            return queryset.filter(instance_id__in=instances)
         return queryset
 
     def _filter_tag(self, queryset, value):
@@ -112,7 +113,7 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
 
     def _filter_deployment_type(self, queryset, value):
         if value:
-            return queryset.filter(deployment_type=value)
+            return queryset.filter(deployment__type=value)
         return queryset
 
     def filter_queryset(self, request, queryset, view):
