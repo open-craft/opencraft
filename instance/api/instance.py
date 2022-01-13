@@ -35,7 +35,7 @@ from instance.serializers.instance import (
     InstanceAppServerSerializer
 )
 
-from .filters import IsOrganizationOwnerFilterBackendInstance
+from .filters import IsOrganizationOwnerFilterBackendInstance, InstanceFilterBackend
 
 
 # Views - API #################################################################
@@ -69,7 +69,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = InstanceReference.objects.all()
     serializer_class = InstanceReferenceDetailedSerializer
-    filter_backends = (IsOrganizationOwnerFilterBackendInstance,)
+    filter_backends = (IsOrganizationOwnerFilterBackendInstance, InstanceFilterBackend)
 
     def get_queryset(self):
         # Don't load all columns, because some of them have very big data
