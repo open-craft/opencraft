@@ -106,7 +106,6 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
             return queryset.filter(openedxappserver_set___status=value).distinct()
         return queryset
 
-
     def _filter_openedx_release(self, queryset, value):
         """
         Filter the InstanceRef queryset on exact openedx_release.
