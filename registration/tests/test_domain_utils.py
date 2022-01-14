@@ -21,7 +21,7 @@ Test the domain verification utils
 """
 
 # Imports #####################################################################
-from unittest.mock import patch
+from unittest.mock import patch, call
 
 import dns.resolver
 from django.contrib.auth import get_user_model
@@ -60,22 +60,53 @@ class DomainUtilsTestCase(TestCase):
         Tests that the configuration check fails if CNAME record is not present
         """
         # CNAME is present but the value is not correct
-        resolver_mock.return_value.__iter__.return_value = ['to-random-domain.com']
+        resolver_mock.side_effect = [
+            ['to-random-domain.com'],
+            []
+        ]
+
         is_passed = is_dns_configured('example.com')
-        resolver_mock.assert_called_with('example.com', 'CNAME')
         self.assertFalse(is_passed)
+        resolver_mock.assert_has_calls([
+            call('example.com', 'CNAME'),
+            call('example.com', 'A'),
+        ])
 
         # Returns False in cases where, record is not present, query doesn't
         # return an answer or all nameservers failed to answer the query.
         # Represented by following exceptions.
         resolver_mock.side_effect = [
-            dns.resolver.NXDOMAIN,
-            dns.resolver.NoAnswer,
-            dns.resolver.NoNameservers
+            dns.resolver.NXDOMAIN,  # CNAME exception
+            dns.resolver.NXDOMAIN,  # A record exception
+            dns.resolver.NoAnswer,  # CNAME exception
+            dns.resolver.NoAnswer,  # A record exception
+            dns.resolver.NoNameservers,  # CNAME exception
+            dns.resolver.NoNameservers,  # A record exception
         ]
         self.assertFalse(is_dns_configured('example2.com'))
         self.assertFalse(is_dns_configured('example3.com'))
         self.assertFalse(is_dns_configured('example4.com'))
+
+
+    @patch('dns.resolver.resolve')
+    def test_dns_configured_with_proxied_cf_domain(self, resolver_mock):
+        """
+        Tests A records are set and passing if CNAME is not set
+
+        Since CloudFlare proxied DNS records are flattened, CNAMEs will be
+        transformed to A records.
+        """
+        resolver_mock.side_effect = [
+            [],
+            ["a-record", "a-record-2"]
+        ]
+
+        is_passed = is_dns_configured('example.com')
+        self.assertTrue(is_passed)
+        resolver_mock.assert_has_calls([
+            call('example.com', 'CNAME'),
+            call('example.com', 'A'),
+        ])
 
 
     @patch('registration.utils.is_dns_configured')
