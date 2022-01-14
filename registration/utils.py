@@ -170,14 +170,29 @@ def is_dns_configured(domain: str) -> bool:
     Checks that the provided domain has a proper DNS configuration.
     There should be a CNAME record present with value haproxy.opencraft.hosting
     """
-    try:
-        answers = dns_resolver.resolve(domain, 'CNAME')
-        cname_records = [str(rdata) for rdata in answers]  # There should only be one
-        is_configured_properly = [
+
+    def get_records(domain_name, record_type):
+        try:
+            return [str(rdata) for rdata in dns_resolver.resolve(domain_name, record_type)]
+        except (dns_resolver.NXDOMAIN, dns_resolver.NoAnswer, dns_resolver.NoNameservers):
+            logger.info(
+                "DNS not configured for external domain %s in %s",
+                domain_name, record_type,
+            )
+
+            return []
+
+    cname_records = get_records(domain, 'CNAME')
+    if cname_records:
+        matching_records = any([
             record == settings.EXTERNAL_DOMAIN_CNAME_VALUE
             for record in cname_records
-        ]
-        return any(is_configured_properly)
-    except (dns_resolver.NXDOMAIN, dns_resolver.NoAnswer, dns_resolver.NoNameservers):
-        logger.info("DNS not configured for external domain %s", domain)
-        return False
+        ])
+
+        if matching_records:
+            return True
+
+    # In case of CloudFlare proxied domains, the CNAME records are flattened and therefore,
+    # converted to A records. Since the A records are pointing to CloudFlare name servers,
+    # we cannot check them properly. Let's assume that the A records are
+    return bool(get_records(domain, 'A'))
