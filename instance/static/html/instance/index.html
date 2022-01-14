@@ -1,20 +1,24 @@
 <div class="loading-msg round warning label" ng-if="loading">
-    Loading...
+  Loading...
 </div>
 
 <div class="notification label {{ notification.type }}" ng-if="notification">
-    {{ notification.message }}
+  {{ notification.message }}
 </div>
 
-<div class="row">
+<div ng-controller="InstanceFilterFormController" class="row">
+  <div instance-filter-form></div>
+</div>
+
+<div class="row">  
   <!-- Instances List -->
   <div class="large-3 columns scrollable">
     <ul class="side-nav side-instance-list">
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance.id == state.params.instanceId}"
           ng-init="
-              newer_appserver = (instance.newest_appserver && !instance.newest_appserver.is_active ?  instance.newest_appserver : null);
-          ">
+                     newer_appserver = (instance.newest_appserver && !instance.newest_appserver.is_active ?  instance.newest_appserver : null);
+                     ">
         <!-- Is there an app server newer than the active app server? -->
         <div class="status-icon-newest" ng-if="newer_appserver"
              ng-class="{healthy: newer_appserver.is_healthy, unhealthy: newer_appserver.is_healthy === false}"

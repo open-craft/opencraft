@@ -24,7 +24,8 @@ var app = angular.module('InstanceApp', [
     'ui.router',
     'restangular',
     'mm.foundation',
-    'ngSanitize'
+    'ngSanitize',
+    'angucomplete-alt'
 ]);
 
 app.config(function($httpProvider) {
@@ -62,7 +63,6 @@ app.config(function($stateProvider, $urlRouterProvider, RestangularProvider, $lo
         });
 });
 
-
 // Services
 app.factory('OpenCraftAPI', function(Restangular) {
     return Restangular.withConfig(function(RestangularConfigurer) {
@@ -98,7 +98,7 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', 
             WebSocketClient.onmessage = $scope.webSocketMessageHandler;
             WebSocketClient.onerror = $scope.webSocketErrorHandler;
         };
-
+        
         $scope.updateInstanceList = function() {
             $scope.loading = true; // Display loading message
 
@@ -274,7 +274,7 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             if (data.instance_id == $scope.instance.id && !data.appserver_id && $scope.instanceLogs) {
                 $scope.instanceLogs.log_entries.push(data.log_entry);
             }
-        })
+        });
 
         $scope.init();
     }
@@ -296,4 +296,67 @@ app.controller("Empty", function ($scope) {
     }
 });
 
+app.controller('InstanceFilterFormController', ['$scope', '$location', 'OpenCraftAPI',
+    function($scope, $location, OpenCraftAPI) {
+        console.log($scope.updateInstanceList);
+        $scope.filters = Object.assign({}, {lifecycle: ''}, $location.search());
+        $scope.initialValues = {};
+
+        function findInitialValue(itemType, itemList) {
+            var selectedId = $scope.filters[itemType];
+            if (!selectedId) {
+                return null;
+            }
+            for (var i=0; i<itemList.length; i++) {
+                var item = itemList[i];
+                if (item.id === selectedId) {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        $scope.init = function() {
+            $scope.instanceList = [];
+            $scope.instanceTagList = [];
+            $scope.deploymentTypeList = [];
+            $scope.statusList = [];
+            $scope.openEdxReleaseList = [];
+            $scope.fetchDropdownList('instance_tag', 'instanceTagList');
+            $scope.fetchDropdownList('deployment_type', 'deploymentTypeList');
+            $scope.fetchDropdownList('status', 'statusList');
+            $scope.fetchDropdownList('openedx_release', 'openEdxReleaseList');
+        };
+        
+        
+        $scope.fetchDropdownList = function(endpoint, scopeField) {
+            return OpenCraftAPI.all(endpoint).getList().then(function(responseList) {
+                $scope[scopeField] = responseList;
+                $scope.initialValues[endpoint] = findInitialValue(endpoint, responseList);
+            }, function(response) {
+                console.log('Error from server: ', response);
+            });
+        };
+
+        $scope.dropdownSelectionChanged = function(selectedItem) {
+            if (selectedItem && selectedItem.originalObject) {
+                $scope.filters[this.inputName] = selectedItem.originalObject.id;
+            } else {
+                $scope.filters[this.inputName] = null;
+            }
+        };
+
+        $scope.submit = function ()  {
+            $location.search($scope.filters);
+            $scope.updateInstanceList();
+        };
+
+        $scope.init();
+
+}]).directive('instanceFilterForm', function() {
+    return {
+        templateUrl: "/static/html/instance/instance-filter-form.html",
+    };
+});
+    
 })();

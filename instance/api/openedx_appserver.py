@@ -28,6 +28,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
+from instance.api.permissions import IsSuperUser
 from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
@@ -36,11 +37,13 @@ from instance.serializers.openedx_appserver import (
     OpenEdXAppServerLogSerializer,
     OpenEdXAppServerSerializer,
     SpawnAppServerSerializer,
+    OpenEdXReleaseSerializer
 )
 from instance.tasks import make_appserver_active, terminate_appserver
 from instance.utils import create_new_deployment
 from .filters import IsOrganizationOwnerFilterBackendAppServer, IsOrganizationOwnerFilterBackendInstance
 from ..models.deployment import DeploymentType
+
 
 # Views - API #################################################################
 
@@ -147,3 +150,21 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
         terminate_appserver(app_server.id)
         return Response({'status': 'App server termination initiated.'})
+
+
+class OpenEdXReleaseViewSet(viewsets.ViewSet):
+    """
+    API to list all *unique* InstanceTag instances.
+    """
+    permission_classes = [IsSuperUser]
+    serializer_class = OpenEdXReleaseSerializer
+
+    def list(self, request):
+        """
+        List API for all AppServer Statuses.
+        """
+        releases = OpenEdXAppServer.objects.values_list('openedx_release', flat=True)
+        releases = releases.order_by('openedx_release').distinct()
+        releases = ({'name': v} for v in releases if v)
+        serializer = self.serializer_class(releases, many=True)
+        return Response(serializer.data)

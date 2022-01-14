@@ -25,9 +25,12 @@ REST Framework API - Router
 from rest_framework import routers
 
 from email_verification.api.v2.views import VerifyEmailViewset
-from instance.api.instance import InstanceViewSet
-from instance.api.openedx_appserver import OpenEdXAppServerViewSet
+from instance.api.appserver import StatusViewSet
+from instance.api.deployment import DeploymentTypeViewSet
+from instance.api.instance import InstanceViewSet, InstanceTagViewSet
+from instance.api.openedx_appserver import OpenEdXAppServerViewSet, OpenEdXReleaseViewSet
 from instance.api.server import OpenStackServerViewSet
+
 from pr_watch.api import WatchedPullRequestViewSet
 from registration.api.v2.views import (
     AccountViewSet,
@@ -40,8 +43,12 @@ from registration.api.v2.views import (
 
 v1_router = routers.DefaultRouter()
 
+v1_router.register(r'status', StatusViewSet, basename='status')
+v1_router.register(r'deployment_type', DeploymentTypeViewSet, basename='deployment_type')
 v1_router.register(r'instance', InstanceViewSet, basename='instance')
+v1_router.register(r'instance_tag', InstanceTagViewSet, basename='instance_tag')
 v1_router.register(r'openedx_appserver', OpenEdXAppServerViewSet)
+v1_router.register(r'openedx_release', OpenEdXReleaseViewSet, basename='openedx_release')
 v1_router.register(r'openstackserver', OpenStackServerViewSet)
 v1_router.register(r'pr_watch', WatchedPullRequestViewSet, basename='pr_watch')
 

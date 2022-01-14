@@ -399,7 +399,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         instance.ref.owner = self.organization2
         instance.ref.save()
 
-        instance.spawn_appserver() # Server state is Running
+        instance.spawn_appserver()  # Server state is Running
 
         instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
         instance2.ref.owner = self.organization2
@@ -423,6 +423,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
             sub_domain='test.com',
             name='test.com',
             additional_monitoring_emails=settings.PROD_APPSERVER_FAIL_EMAILS
+
         )
         instance.ref.owner = self.organization2
         instance.ref.save()
