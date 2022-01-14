@@ -19,7 +19,7 @@
 """
 Filters for the API
 """
-
+from django.conf import settings
 from rest_framework import filters
 
 from instance.models.openedx_instance import OpenEdXInstance
@@ -74,6 +74,7 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
 
     Currently allowed fields:
     - deployment_type
+    - lifecycle
     - name
     - notes
     - openedx_release
@@ -106,7 +107,6 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
             return queryset.filter(openedxappserver_set___status=value).distinct()
         return queryset
 
-
     def _filter_openedx_release(self, queryset, value):
         """
         Filter the InstanceRef queryset on exact openedx_release.
@@ -133,6 +133,37 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
         if value:
             return queryset.filter(deployment__type=value)
         return queryset
+
+    def _filter_lifecycle(self, queryset, value):
+        """
+        Filter the InstanceRef queryset on whether it will be released
+        to production or not.
+
+        Allowed values:
+        - production
+        - sandbox
+        """
+
+        # There currently isn't a clean way of determining this
+        # so the below is just a hack.
+        if not value:
+            return queryset
+
+        default_prod_monitor_email = settings.PROD_APPSERVER_FAIL_EMAILS
+
+        # For dev environments this setting is empty, no use filtering on it.
+        if not default_prod_monitor_email:
+            return queryset
+
+        if value == 'production':
+            instances = OpenEdXInstance.objects.filter(
+                additional_monitoring_emails__contains=default_prod_monitor_email
+            )
+        else:
+            instances = OpenEdXInstance.objects.exclude(
+                additional_monitoring_emails__contains=default_prod_monitor_email
+            )
+        return queryset.filter(instance_id__in=instances)
 
     def filter_queryset(self, request, queryset, view):
         """

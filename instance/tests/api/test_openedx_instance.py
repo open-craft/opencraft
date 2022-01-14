@@ -26,6 +26,7 @@ from unittest.mock import patch
 
 import ddt
 from django.conf import settings
+from django.test.utils import override_settings
 from rest_framework import status
 
 from instance.models.deployment import DeploymentType
@@ -35,6 +36,7 @@ from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.utils import patch_services
+
 
 # Tests #######################################################################
 
@@ -296,7 +298,6 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         instance2.ref.owner = self.organization2
         instance2.save()
 
-
         self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/?name=test.com')
         self.assertEqual(len(response.data), 1)
@@ -317,7 +318,6 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         instance2.ref.notes = 'test2.com notes'
         instance2.ref.save()
         instance2.save()
-
 
         self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/?notes=test2')
@@ -390,7 +390,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertEqual(response.data[0]['id'], instance2.ref.id)
 
     @patch_services
-    def test_instance_list_filter_on_status(self, mock_consul, patch_services):
+    def test_instance_list_filter_on_status(self, mock_consul, mock_patch_services):
         """
         GET - instance list - it should be possible to filter on any of the
         app server statuses
@@ -405,10 +405,56 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         instance2.ref.owner = self.organization2
         instance2.ref.save()
 
-        appserver2_id = instance2.spawn_appserver()
+        instance2.spawn_appserver()
         instance2.appserver_set.update(_status=AppServerStatus.New.state_id)
 
         self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/?status=running')
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['id'], instance.ref.id)
+
+    @override_settings(PROD_APPSERVER_FAIL_EMAILS=['urgent@example.com'])
+    @patch_services
+    def test_instance_list_filter_on_lifecycle_production(self, mock_consul, mock_patch_services):
+        """
+        GET - instance list - filter on all production instances.
+        """
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.com',
+            name='test.com',
+            additional_monitoring_emails=settings.PROD_APPSERVER_FAIL_EMAILS
+        )
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?lifecycle=production')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance.ref.id)
+
+    @override_settings(PROD_APPSERVER_FAIL_EMAILS=['urgent@example.com'])
+    @patch_services
+    def test_instance_list_filter_on_lifecycle_sandbox(self, mock_consul, mock_patch_services):
+        """
+        GET - instance list - filter on all sandbox instances.
+        """
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.com',
+            name='test.com',
+            additional_monitoring_emails=settings.PROD_APPSERVER_FAIL_EMAILS
+        )
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?lifecycle=sandbox')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance2.ref.id)
