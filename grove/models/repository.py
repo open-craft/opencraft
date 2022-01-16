@@ -24,6 +24,7 @@ import logging
 from django.conf import settings
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
+from grove.gitlab import GitLabClient
 
 from instance.logging import ModelLoggerAdapter
 
@@ -40,9 +41,10 @@ def get_default_repository() -> "GroveClusterRepository":
     repository, _ = GroveClusterRepository.objects.get_or_create(
         name=settings.GROVE_DEFAULT_REPOSITORY_NAME,
         project_id=settings.GROVE_DEFAULT_REPOSITORY_PROJECT_ID,
-        unleash_instance_id=settings.GROVE_DEFAULT_REPOSITORY_UNLEASH_INSTANCE_ID,
-        git_ref=settings.GROVE_DEFAULT_REPOSITORY_GIT_REF,
-        trigger_token=settings.GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN,
+        defaults = {
+            'unleash_instance_id': settings.GROVE_DEFAULT_REPOSITORY_UNLEASH_INSTANCE_ID,
+            'git_ref': settings.GROVE_DEFAULT_REPOSITORY_GIT_REF,
+        }
     )
 
     return repository
@@ -72,11 +74,29 @@ class GroveClusterRepository(TimeStampedModel):
     )
     git_ref = models.CharField(
         max_length=255,
+        default='main',
         help_text="Git branch or tag on the repository to use when triggering pipelines.",
+    )
+    username = models.CharField(
+        max_length=255,
+        help_text="GitLab username",
+        default=None,
+        null=True,
+        blank=True,
+    )
+    personal_access_token = models.CharField(
+        max_length=255,
+        help_text="GitLab Personal Access Token",
+        default=None,
+        null=True,
+        blank=True
     )
     trigger_token = models.CharField(
         max_length=255,
-        help_text="GitLab token used to trigger pipeline builds."
+        help_text="GitLab token used to trigger pipeline builds.",
+        default=None,
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -89,3 +109,18 @@ class GroveClusterRepository(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name} ({self.project_id})"
+
+    @property
+    def gitlab_client(self):
+        username = self.username if self.username else settings.DEFAULT_GITLAB_USER
+        personal_access_token = self.personal_access_token if self.personal_access_token else settings.DEFAULT_GITLAB_PERSONAL_ACCESS_TOKEN
+        trigger_token = self.trigger_token if self.trigger_token else settings.GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN
+
+        return GitLabClient(
+            base_url=settings.GITLAB_API_BASE_URL,
+            project_id=self.project_id,
+            ref=self.git_ref,
+            username=username,
+            personal_access_token=personal_access_token,
+            trigger_token=trigger_token,
+        )

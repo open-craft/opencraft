@@ -17,7 +17,6 @@ services:
       - "5432:5432"
 
   redis:
-    image: postgres:12.6-alpine
     image: redis:4
     ports:
       - "6379:6379"
@@ -31,7 +30,7 @@ services:
       - redis
     env_file: .env
     ports:
-      - "127.0.0.1:5000:5000"
+      - "5000:5000"
     volumes:
       - ./:/usr/src/ocim/
 
@@ -41,7 +40,7 @@ services:
     depends_on:
       - ocim
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     tty: true
     volumes:
       - ./frontend:/usr/src/ocim-frontend/

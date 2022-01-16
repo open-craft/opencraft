@@ -76,3 +76,5 @@ class GroveInstance(
         null=True,
         help_text='Repository in GitLab in which the instance is defined.'
     )
+
+    successfully_provisioned = models.BooleanField(default=False)
