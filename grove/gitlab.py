@@ -34,11 +34,15 @@ class GitLabClient:
     A client to call basic operations on GitLab.
     """
 
-    def __init__(self, base_url: str, token: GitLabToken):
+    def __init__(self, base_url: str, project_id: int, ref: str, username: str, personal_access_token: str, trigger_token: str):
         self.base_url = base_url
-        self.token = "" if token is None else token
+        self.username = username
+        self.personal_access_token = personal_access_token
+        self.trigger_token = trigger_token
+        self.project_id = project_id
+        self.ref = ref
 
-    def trigger_pipeline(self, ref: str, project_id: int, token: GitLabToken, variables: Dict[str, Any]) -> dict:
+    def trigger_pipeline(self, variables: Dict[str, Any]) -> dict:
         """
         Trigger a pipeline on GitLab using the given token if set.
 
@@ -46,14 +50,14 @@ class GitLabClient:
         response data is returned.
         """
 
-        if token is None and self.token is None:
+        if self.trigger_token is None:
             raise ImproperlyConfigured("GitLab token is not set.")
 
         response = requests.post(
-            urljoin(self.base_url, f"projects/{project_id}/trigger/pipeline"),
+            urljoin(self.base_url, f"projects/{self.project_id}/trigger/pipeline"),
             data={
-                "ref": ref,
-                "token": token,
+                "ref": self.ref,
+                "token": self.trigger_token,
                 **variables,
             }
         )
@@ -61,8 +65,29 @@ class GitLabClient:
         response.raise_for_status()
         return response.json()
 
+    def is_there_any_pipeline_running(self):
+        """
+        Checks if there any pipeline running for current GitLab project and branch (ref).
 
-gitlab_client = GitLabClient(
-    base_url=settings.GITLAB_API_BASE_URL,
-    token=settings.GITLAB_API_TOKEN,
-)
+        Returns:
+            bool - False if there is no pipeline running, True otherwise.
+        """
+
+        response = requests.get(
+            urljoin(self.base_url, f"projects/{self.project_id}/pipelines"),
+            params = {
+                'ref': self.ref
+            },
+            headers={
+                'PRIVATE-TOKEN': self.personal_access_token,
+            },
+        )
+        response.raise_for_status()
+        pipelines = response.json()
+
+        for pipeline in pipelines:
+            # any pipeline that has status any of created, waiting_for_resource, preparing,
+            # pending or running will be considered as running pipeline.
+            if pipeline['status'] in ['created', 'waiting_for_resource', 'preparing', 'pending', 'running']:
+                return True
+        return False

@@ -41,6 +41,9 @@ def get_unleash_client(url: str, project_id: int, instance_id: str, app_name: st
         url=url,
         instance_id=instance_id,
         app_name=app_name,
+        custom_headers={
+            'Authorization': settings.GITLAB_API_TOKEN
+        }
     )
 
     client.initialize_client()

@@ -236,7 +236,6 @@ def create_new_deployment(
     Create a new deployment for an existing instance, and start it asynchronously
     """
     # pylint: disable=cyclic-import, useless-suppression
-    from grove.gitlab import gitlab_client
     from grove.models.deployment import GroveDeployment
     from grove.models.instance import GroveInstance
     from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
@@ -263,6 +262,7 @@ def create_new_deployment(
         # created for them. The reason this deployment behavior is controlled by a feature switch
         # is that we may need to roll back ASAP during the manual QA on production. Later, this
         # setting should be cleaned up as part of a cleanup task when Grove is deployed 100%.
+        gitlab_client = instance.repository.gitlab_client
         if not is_feature_enabled(gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
             return
 

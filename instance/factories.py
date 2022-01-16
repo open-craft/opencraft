@@ -28,7 +28,6 @@ import yaml
 
 from django.conf import settings
 
-from grove.gitlab import gitlab_client
 from grove.models.instance import GroveInstance
 from grove.models.repository import get_default_repository
 from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
@@ -36,6 +35,7 @@ from instance import ansible
 from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
+from grove.models.repository import get_default_repository
 
 
 # Logging #####################################################################
@@ -49,24 +49,9 @@ def _check_environment():
     """
     Check environment and report potential problems for production instances
     """
-    if settings.INSTANCE_STORAGE_TYPE == StorageContainer.S3_STORAGE and \
-            not(settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
-        logger.warning(
-            "AWS support is currently enabled. Add AWS_ACCESS_KEY_ID and "
-            "AWS_SECRET_ACCESS_KEY settings or adjust INSTANCE_STORAGE_TYPE setting."
-        )
-        return False
-    if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:
-        logger.warning(
-            "No MySQL servers configured, and default URL for external MySQL database is missing."
-            "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
-        )
-        return False
-    if not MongoDBServer.objects.exists() and settings.DEFAULT_INSTANCE_MONGO_URL is None:
-        logger.warning(
-            "No MongoDB servers configured, and default URL for external MongoDB database is missing."
-            "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."
-        )
+    grove_repo = get_default_repository()
+    if not grove_repo:
+        logger.warning("Default Grove repository is not available!")
         return False
     return True
 
@@ -111,7 +96,7 @@ def instance_factory(**kwargs):
     return instance
 
 
-def production_instance_factory(**kwargs):
+def production_instance_factory(**kwargs) -> GroveInstance:
     """
     Factory function for creating production instances.
 
@@ -169,18 +154,12 @@ def production_instance_factory(**kwargs):
     project_id = repository.project_id
     instance_id = repository.unleash_instance_id
 
-    if is_feature_enabled(gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
+    if is_feature_enabled(repository.gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
         instance_kwargs.update({"repository": repository})
 
         # Create Grove instance
         return GroveInstance.objects.create(**instance_kwargs)
 
-    # Create OpenStack instance
-    instance_kwargs.update({
-        # Allow production instances to use a different OpenStack instance flavor by default.
-        # This allows using a larger instance flavor for production instances.
-        "openstack_server_flavor": settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
-        **kwargs
-    })
-    production_instance = OpenEdXInstance.objects.create(**instance_kwargs)
+    instance_kwargs.update(kwargs)
+    production_instance = GroveInstance.objects.create(**instance_kwargs)
     return production_instance

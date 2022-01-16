@@ -19,12 +19,14 @@
 The Grove deployment model.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from django.contrib.postgres.fields import JSONField
+from django.db import models
 from ruamel import yaml
+from django.db import transaction
 
-from grove.gitlab import gitlab_client
+
 from instance.models.deployment import Deployment
 
 
@@ -39,21 +41,45 @@ class GroveDeployment(Deployment):
 
     overrides = JSONField(null=True, blank=True)
 
-    def trigger_pipeline(self) -> Dict[str, Any]:
+    PENDING = 0
+    TRIGGERED = 1
+    DEPLOYED = 2
+
+    STATUS_CHOICES = (
+        (PENDING, 'Pending',),
+        (TRIGGERED, 'Triggered Deployment',),
+        (DEPLOYED, 'Deployed',),
+    )
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=PENDING)
+
+
+    def build_trigger_payload(self) -> Dict[str, Any]:
+        instance = self.instance.instance
+        payload = {
+            "variables[INSTANCE_NAME]": instance.name,
+            "variables[DEPLOYMENT_REQUEST_ID]": self.pk,
+            "variables[NEW_INSTANCE_TRIGGER]": True,
+
+            "TUTOR_LMS_HOST": instance.external_lms_domain if instance.external_lms_domain else instance.internal_lms_domain,
+            "TUTOR_PREVIEW_LMS_HOST": instance.external_lms_preview_domain if instance.external_lms_preview_domain else instance.internal_lms_preview_domain,
+            "TUTOR_CMS_HOST": instance.external_studio_domain if instance.external_studio_domain else instance.internal_studio_domain,
+            "TUTOR_DISCOVERY_HOST": instance.external_discovery_domain if instance.external_discovery_domain else instance.internal_discovery_domain,
+            "TUTOR_ECOMMERCE_HOST": instance.external_ecommerce_domain if instance.external_ecommerce_domain else instance.internal_ecommerce_domain,
+        }
+
+        payload.update(self.overrides)
+        return payload
+
+    def trigger_pipeline(self) -> Optional[Dict[str, Any]]:
         """
         Trigger a deployment pipeline on GitLab.
         """
-
-        instance = self.instance.instance
-        repository = instance.repository
-
-        return gitlab_client.trigger_pipeline(
-            ref=repository.git_ref,
-            project_id=repository.project_id,
-            token=repository.trigger_token,
-            variables={
-                "variables[INSTANCE_NAME]": instance.name,
-                "variables[DEPLOYMENT_REQUEST_ID]": self.pk,
-                "variables[CONFIG_OVERRIDES]": yaml.dump(self.overrides)
-            }
-        )
+        if self.status == self.PENDING:
+            instance = self.instance.instance
+            gitlab_client = instance.repository.gitlab_client
+            response = gitlab_client.trigger_pipeline(
+                variables=self.build_trigger_payload()
+            )
+            self.status = self.TRIGGERED
+            self.save()
+            return response
