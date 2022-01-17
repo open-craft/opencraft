@@ -19,7 +19,7 @@
 """
 Filters for the API
 """
-
+from django.conf import settings
 from rest_framework import filters
 
 from instance.models.openedx_instance import OpenEdXInstance
@@ -143,14 +143,17 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
         - production
         - sandbox
         """
+
         # There currently isn't a clean way of determining this
         # so the below is just a hack.
-
         if not value:
             return queryset
 
-        # TODO: Find the setting that contains this value.
-        default_prod_monitor_email = ['urgent@opencraft.com']
+        default_prod_monitor_email = settings.PROD_APPSERVER_FAIL_EMAILS
+
+        # For dev environments this setting is empty, no use filtering on it.
+        if not default_prod_monitor_email:
+            return queryset
 
         if value == 'production':
             instances = OpenEdXInstance.objects.filter(
