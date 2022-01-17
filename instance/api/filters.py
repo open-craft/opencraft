@@ -74,6 +74,7 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
 
     Currently allowed fields:
     - deployment_type
+    - lifecycle
     - name
     - notes
     - openedx_release
@@ -132,6 +133,34 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
         if value:
             return queryset.filter(deployment__type=value)
         return queryset
+
+    def _filter_lifecycle(self, queryset, value):
+        """
+        Filter the InstanceRef queryset on whether it will be released
+        to production or not.
+
+        Allowed values:
+        - production
+        - sandbox
+        """
+        # There currently isn't a clean way of determining this
+        # so the below is just a hack.
+
+        if not value:
+            return queryset
+
+        # TODO: Find the setting that contains this value.
+        default_prod_monitor_email = ['urgent@opencraft.com']
+
+        if value == 'production':
+            instances = OpenEdXInstance.objects.filter(
+                additional_monitoring_emails__contains=default_prod_monitor_email
+            )
+        else:
+            instances = OpenEdXInstance.objects.exclude(
+                additional_monitoring_emails__contains=default_prod_monitor_email
+            )
+        return queryset.filter(instance_id__in=instances)
 
     def filter_queryset(self, request, queryset, view):
         """

@@ -411,3 +411,48 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/?status=running')
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['id'], instance.ref.id)
+
+    @patch_services
+    def test_instance_list_filter_on_lifecycle_production(self, mock_consul, mock_patch_services):
+        """
+        GET - instance list - filter on all production instances.
+        """
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.com',
+            name='test.com',
+            additional_monitoring_emails=['urgent@opencraft.com']
+        )
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?lifecycle=production')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance.ref.id)
+
+
+    @patch_services
+    def test_instance_list_filter_on_lifecycle_sandbox(self, mock_consul, mock_patch_services):
+        """
+        GET - instance list - filter on all sandbox instances.
+        """
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.com',
+            name='test.com',
+            additional_monitoring_emails=['urgent@opencraft.com']
+        )
+        instance.ref.owner = self.organization2
+        instance.ref.save()
+
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com', name='test2.com')
+        instance2.ref.owner = self.organization2
+        instance2.ref.save()
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/?lifecycle=sandbox')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], instance2.ref.id)
