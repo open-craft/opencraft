@@ -434,7 +434,6 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['id'], instance.ref.id)
 
-
     @patch_services
     def test_instance_list_filter_on_lifecycle_sandbox(self, mock_consul, mock_patch_services):
         """
