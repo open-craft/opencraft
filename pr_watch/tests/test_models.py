@@ -78,12 +78,12 @@ class WatchedPullRequestTestCase(TestCase):
             github_repository_name='edx',
             branch_name='test-branch',
         )
-        self.assertEqual(watched_pr.fork_name, 'open-craft/edx')
+        self.assertEqual(watched_pr.fork_name, 'open-craft/openedx')
         self.assertEqual(watched_pr.target_fork_name, 'openedx/edx-dest')
-        self.assertEqual(watched_pr.github_base_url, 'https://github.com/open-craft/edx')
+        self.assertEqual(watched_pr.github_base_url, 'https://github.com/open-craft/openedx')
         self.assertEqual(watched_pr.github_pr_number, 234)
         self.assertEqual(watched_pr.github_branch_url, 'https://github.com/open-craft/openedx/tree/test-branch')
-        self.assertEqual(watched_pr.repository_url, 'https://github.com/open-craft/edx.git')
+        self.assertEqual(watched_pr.repository_url, 'https://github.com/open-craft/openedx.git')
         self.assertEqual(watched_pr.updates_feed, 'https://github.com/open-craft/openedx/commits/test-branch.atom')
 
     def test_set_fork_name(self):
