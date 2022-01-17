@@ -26,6 +26,7 @@ from unittest.mock import patch
 
 import ddt
 from django.conf import settings
+from django.test.utils import override_settings
 from rest_framework import status
 
 from instance.models.deployment import DeploymentType
@@ -412,6 +413,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['id'], instance.ref.id)
 
+    @override_settings(PROD_APPSERVER_FAIL_EMAILS=['urgent@example.com'])
     @patch_services
     def test_instance_list_filter_on_lifecycle_production(self, mock_consul, mock_patch_services):
         """
@@ -420,7 +422,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         instance = OpenEdXInstanceFactory(
             sub_domain='test.com',
             name='test.com',
-            additional_monitoring_emails=['urgent@opencraft.com']
+            additional_monitoring_emails=settings.PROD_APPSERVER_FAIL_EMAILS
         )
         instance.ref.owner = self.organization2
         instance.ref.save()
@@ -434,6 +436,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['id'], instance.ref.id)
 
+    @override_settings(PROD_APPSERVER_FAIL_EMAILS=['urgent@example.com'])
     @patch_services
     def test_instance_list_filter_on_lifecycle_sandbox(self, mock_consul, mock_patch_services):
         """
@@ -442,7 +445,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         instance = OpenEdXInstanceFactory(
             sub_domain='test.com',
             name='test.com',
-            additional_monitoring_emails=['urgent@opencraft.com']
+            additional_monitoring_emails=settings.PROD_APPSERVER_FAIL_EMAILS
         )
         instance.ref.owner = self.organization2
         instance.ref.save()
