@@ -50,7 +50,7 @@ class StatusViewSet(viewsets.ViewSet):
         pk: state_id of Status class.
         """
         try:
-            item = Status.states_with(state_id=pk)
+            item = Status.states_with(state_id=pk)[0]
         except IndexError:
             raise NotFound
         serializer = self.serializer_class(item)

@@ -459,3 +459,58 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/?lifecycle=sandbox')
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['id'], instance2.ref.id)
+
+
+@ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
+class OpenEdXReleaseAPITestCase(APITestCase):
+    """
+    Tests for the OpenEdx Release names API
+    """
+    def test_openedx_release_list(self, mock_consul):
+        """
+        GET - test DeploymentType API list
+        """
+        self.api_client.login(username='user3', password='pass')
+
+        etch_instance = OpenEdXInstanceFactory(sub_domain='etch.com', openedx_release='etch')
+        make_test_appserver(etch_instance)
+
+        response = self.api_client.get('/api/v1/openedx_release/').json()
+
+        self.assertEqual(response[0]['id'], 'etch')
+        self.assertEqual(response[0]['name'], 'etch')
+
+    def test_deployment_type_fetch_single(self, mock_consul):
+        """
+        GET - test DeploymentType fetching single object
+        """
+
+        etch_instance = OpenEdXInstanceFactory(sub_domain='etch.com', openedx_release='etch')
+        make_test_appserver(etch_instance)
+
+        wally_instance = OpenEdXInstanceFactory(sub_domain='wally.com', openedx_release='wally')
+        make_test_appserver(wally_instance)
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get(f'/api/v1/openedx_release/wally/').json()
+        self.assertEqual(response['id'], 'wally')
+        self.assertEqual(response['name'], 'wally')
+
+    def test_openedx_release_permission_login_required(self, mock_consul):
+        """
+        GET - test DeploymentType API available unavailable to logged in users
+        """
+        response = self.api_client.get(f'/api/v1/openedx_release/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_openedx_release_permission_superuser_only(self, mock_consul):
+        """
+        GET - test DeploymentType API available to superusers
+        """
+        self.api_client.login(username='user1', password='pass')
+        response = self.api_client.get(f'/api/v1/openedx_release/')
+        self.assertEqual(response.status_code, 403)

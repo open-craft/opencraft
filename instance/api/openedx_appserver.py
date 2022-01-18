@@ -154,7 +154,7 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
 
 class OpenEdXReleaseViewSet(viewsets.ViewSet):
     """
-    API to list all *unique* InstanceTag instances.
+    API to list all *unique* OpenEdxRelease (AppServer.openedx_release) instances.
     """
     permission_classes = [IsSuperUser]
     serializer_class = OpenEdXReleaseSerializer
@@ -167,4 +167,13 @@ class OpenEdXReleaseViewSet(viewsets.ViewSet):
         releases = releases.order_by('openedx_release').distinct()
         releases = ({'name': v} for v in releases if v)
         serializer = self.serializer_class(releases, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk):
+        """
+        API to fetch and list single OpenEdxRelease (AppServer.openedx_release) instance.
+        """
+        releases = OpenEdXAppServer.objects.values_list('openedx_release', flat=True)
+        release_name = releases.filter(openedx_release=pk).first()
+        serializer = self.serializer_class({'name': release_name})
         return Response(serializer.data)

@@ -1,0 +1,12 @@
+[
+    {
+        "id": 10,
+        "name": "etch",
+        "description": "Debian Etch Deploys"
+    },
+    {
+        "id": 20,
+        "name": "Lenny",
+        "description": "Debian Lenny Deploys"
+    }
+]

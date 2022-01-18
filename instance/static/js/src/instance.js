@@ -102,10 +102,8 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', 
         $scope.updateInstanceList = function() {
             $scope.loading = true; // Display loading message
 
-            console.log('Updating instance list');
             return OpenCraftAPI.all("instance").getList($location.search()).then(function(instanceList) {
                 $scope.instanceList = instanceList;
-                console.log('Updated instance list:', instanceList);
             }, function(response) {
                 console.log('Error from server: ', response);
             }).finally(function () {
@@ -251,7 +249,6 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
         };
 
         $scope.spawn_appserver = function() {
-            console.log('Spawning new AppServer');
             $scope.is_spawning_appserver = true; // Disable the button
 
             OpenCraftAPI.all("openedx_appserver").post({instance_id: $stateParams.instanceId});
@@ -298,7 +295,6 @@ app.controller("Empty", function ($scope) {
 
 app.controller('InstanceFilterFormController', ['$scope', '$location', 'OpenCraftAPI',
     function($scope, $location, OpenCraftAPI) {
-        console.log($scope.updateInstanceList);
         $scope.filters = Object.assign({}, {lifecycle: ''}, $location.search());
         $scope.initialValues = {};
 
@@ -322,6 +318,7 @@ app.controller('InstanceFilterFormController', ['$scope', '$location', 'OpenCraf
             $scope.deploymentTypeList = [];
             $scope.statusList = [];
             $scope.openEdxReleaseList = [];
+
             $scope.fetchDropdownList('instance_tag', 'instanceTagList');
             $scope.fetchDropdownList('deployment_type', 'deploymentTypeList');
             $scope.fetchDropdownList('status', 'statusList');

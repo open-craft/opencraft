@@ -29,6 +29,7 @@ from rest_framework import status
 
 from django.conf import settings
 from django.test.utils import override_settings
+from instance.models.instance import InstanceTag
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -323,3 +324,53 @@ class InstanceAPITestCase(APITestCase):
         self.assertFalse(mock_is_valid.called)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual({"error": "Instance attributes are not valid."}, response.data)
+
+
+@ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
+class InstanceTagAPITestCase(APITestCase):
+    """
+    Tests for the Instance Tag API
+    """
+    def test_instance_tag_list(self, mock_consul):
+        """
+        GET - test InstanceTag API list
+        """
+        tag = InstanceTag.objects.create(name='square', description='Square')
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance_tag/').json()
+        self.assertEqual(response[0]['id'], tag.id)
+        self.assertEqual(response[0]['name'], tag.name)
+        self.assertEqual(response[0]['description'], tag.description)
+
+    def test_instance_tag_fetch_single(self, mock_consul):
+        """
+        GET - test InstanceTag fetching single object
+        """
+        InstanceTag.objects.create(name='square', description='Square')
+        tag = InstanceTag.objects.create(name='circle', description='circle')
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get(f'/api/v1/instance_tag/{tag.id}/').json()
+        self.assertEqual(response['id'], tag.id)
+        self.assertEqual(response['name'], tag.name)
+        self.assertEqual(response['description'], tag.description)
+
+    def test_instance_tag_permission_login_required(self, mock_consul):
+        """
+        GET - test InstanceTag API unavailable to logged in users
+        """
+        response = self.api_client.get(f'/api/v1/instance_tag/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_instance_tag_permission_superuser_only(self, mock_consul):
+        """
+        GET - test InstanceTag API available to superusers
+        """
+        self.api_client.login(username='user1', password='pass')
+        response = self.api_client.get(f'/api/v1/instance_tag/')
+        self.assertEqual(response.status_code, 403)
