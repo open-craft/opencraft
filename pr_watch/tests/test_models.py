@@ -75,7 +75,7 @@ class WatchedPullRequestTestCase(TestCase):
         watched_pr = WatchedPullRequest(
             github_organization_name='open-craft',
             github_pr_url='https://github.com/openedx/edx-dest/pull/234',
-            github_repository_name='edx',
+            github_repository_name='openedx',
             branch_name='test-branch',
         )
         self.assertEqual(watched_pr.fork_name, 'open-craft/openedx')
