@@ -71,7 +71,7 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
 
 class StatusSerializer(serializers.Serializer):
     """
-    Simple serializer for DeploymentType
+    Simple serializer for AppServer Status.
     """
     id = serializers.CharField(source='state_id')
     state_id = serializers.CharField()

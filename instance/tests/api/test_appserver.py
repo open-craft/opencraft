@@ -22,26 +22,17 @@ Views - Tests
 
 # Imports #####################################################################
 
-from unittest.mock import patch
-
-import ddt
-
 from instance.models.appserver import Status
 from instance.tests.api.base import APITestCase
 
 
 # Tests #######################################################################
 
-@ddt.ddt
-@patch(
-    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
-    return_value=(1, True)
-)
 class StatusAPITestCase(APITestCase):
     """
     Tests for the Status API
     """
-    def test_status_list_contains_all_statuses(self, mock_consul):
+    def test_status_list_contains_all_statuses(self):
         """
         GET - test Status API list
         """
@@ -53,24 +44,14 @@ class StatusAPITestCase(APITestCase):
             self.assertEqual(status_json['id'], status.state_id)
             self.assertEqual(status_json['name'], status.name)
 
-    def test_status_fetch_single(self, mock_consul):
-        """
-        GET - test Status fetching single object
-        """
-        status = Status.ConfigurationFailed
-        self.api_client.login(username='user3', password='pass')
-        response = self.api_client.get(f'/api/v1/status/{status.state_id}/').json()
-        self.assertEqual(response['id'], status.state_id)
-        self.assertEqual(response['name'], status.name)
-
-    def test_status_permission_login_required(self, mock_consul):
+    def test_status_permission_login_required(self):
         """
         GET - test Status API available unavailable to logged in users
         """
         response = self.api_client.get(f'/api/v1/status/')
         self.assertEqual(response.status_code, 403)
 
-    def test_status_permission_superuser_only(self, mock_consul):
+    def test_status_permission_superuser_only(self):
         """
         GET - test Status API available to superusers
         """

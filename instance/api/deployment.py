@@ -17,10 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-DeploymentType API
+Deployment API
 """
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 from rest_framework import viewsets
 
 from instance.api.permissions import IsSuperUser
@@ -30,7 +29,7 @@ from instance.serializers.deployment import DeploymentTypeSerializer
 
 class DeploymentTypeViewSet(viewsets.ViewSet):
     """
-    API to list all *unique* InstanceTag instances.
+    API to list all Deployment types.
     """
     serializer_class = DeploymentTypeSerializer
     permission_classes = [IsSuperUser]
@@ -41,17 +40,4 @@ class DeploymentTypeViewSet(viewsets.ViewSet):
         """
         deployments = sorted(DeploymentType, key=lambda d: d.value)
         serializer = self.serializer_class(deployments, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk):
-        """
-        Retrieve API for a DeploymentType.
-
-        pk: Name of DeploymentType item.
-        """
-        try:
-            item = DeploymentType[pk]
-        except KeyError:
-            raise NotFound
-        serializer = self.serializer_class(item)
         return Response(serializer.data)

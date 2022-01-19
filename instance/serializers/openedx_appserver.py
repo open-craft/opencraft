@@ -87,7 +87,8 @@ class SpawnAppServerSerializer(serializers.Serializer):
 
 class OpenEdXReleaseSerializer(serializers.Serializer):
     """
-    Simple serializer for OpenEdX release names.
+    Simple serializer for OpenEdX release names, that are
+    linked to AppServer instances.
     """
     id = serializers.CharField(source='name')
     name = serializers.CharField()

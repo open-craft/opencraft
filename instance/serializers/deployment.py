@@ -17,14 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance serializers (API representation)
+Deployment serializers (API representation)
 """
 from rest_framework import serializers
 
 # create/update intentionally omitted, pylint: disable=abstract-method
 class DeploymentTypeSerializer(serializers.Serializer):
     """
-    Simple serializer for DeploymentType
+    Simple serializer for DeploymentType.
     """
     id = serializers.CharField(source='name')
     name = serializers.CharField()

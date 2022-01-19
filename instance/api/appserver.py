@@ -20,7 +20,6 @@
 Status API
 """
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 from rest_framework import viewsets
 
 from instance.api.permissions import IsSuperUser
@@ -30,7 +29,7 @@ from instance.serializers.appserver import StatusSerializer
 
 class StatusViewSet(viewsets.ViewSet):
     """
-    API to list all *unique* InstanceTag instances.
+    API to list all AppServer Statuses.
     """
     serializer_class = StatusSerializer
     permission_classes = [IsSuperUser]
@@ -41,17 +40,4 @@ class StatusViewSet(viewsets.ViewSet):
         """
         states = sorted(Status.states, key=lambda i: i.name)
         serializer = self.serializer_class(states, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk):
-        """
-        Retrieve API for a Status.
-
-        pk: state_id of Status class.
-        """
-        try:
-            item = Status.states_with(state_id=pk)[0]
-        except IndexError:
-            raise NotFound
-        serializer = self.serializer_class(item)
         return Response(serializer.data)

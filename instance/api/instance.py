@@ -152,6 +152,6 @@ class InstanceTagViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API to list all *unique* InstanceTag instances.
     """
-    queryset = InstanceTag.objects.order_by('name')
+    queryset = InstanceTag.objects.order_by('name').filter(openedxinstance__isnull=False)
     serializer_class = InstanceTagSerializer
     permission_classes = [IsSuperUser]

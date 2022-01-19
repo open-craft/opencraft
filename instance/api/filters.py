@@ -122,7 +122,7 @@ class InstanceFilterBackend(filters.BaseFilterBackend):
         least one matching tag.
         """
         if value:
-            instances = OpenEdXInstance.objects.filter(tags__name__iexact=value)
+            instances = OpenEdXInstance.objects.filter(tags=value)
             return queryset.filter(instance_id__in=instances)
         return queryset
 
