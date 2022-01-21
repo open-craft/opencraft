@@ -1,6 +1,7 @@
 // Variables
 
 $header-height: 2.8125em;
+$filter-form-height: 12.5em;
 
 // SCSS
 
@@ -42,7 +43,7 @@ ul.side-nav li.active {
 
     .scrollable {
         overflow: auto;
-        height: calc(100vh - #{$header-height});
+        height: calc(100vh - #{$header-height} - #{$filter-form-height});
     }
 
     .scrollable::-webkit-scrollbar {
