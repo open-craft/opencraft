@@ -67,3 +67,12 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
         output['modified'] = instance.modified
         output['terminated'] = instance.terminated
         return output
+
+
+class StatusSerializer(serializers.Serializer):
+    """
+    Simple serializer for AppServer Status.
+    """
+    id = serializers.CharField(source='state_id')
+    state_id = serializers.CharField()
+    name = serializers.CharField()

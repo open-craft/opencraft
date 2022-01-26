@@ -24,7 +24,7 @@ Instance serializers (API representation)
 
 from rest_framework import serializers
 
-from instance.models.instance import InstanceReference, Instance
+from instance.models.instance import InstanceReference, Instance, InstanceTag
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
 from instance.serializers.logentry import LogEntrySerializer
@@ -151,3 +151,12 @@ class InstanceAppServerSerializer(serializers.ModelSerializer):
             for appserver in instance.app_servers
         ]
         return output
+
+
+class InstanceTagSerializer(serializers.ModelSerializer):
+    """
+    Simple high-level serializer for InstanceTag
+    """
+    class Meta:
+        fields = ['id', 'name', 'description']
+        model = InstanceTag
