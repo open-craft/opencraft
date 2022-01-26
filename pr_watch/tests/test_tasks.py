@@ -211,7 +211,7 @@ class TasksTestCase(TestCase):
             When asked about PRs in the first repository, answer the first test PR,
             and when asked about the second, answer the second one.
             """
-            if fork_name == 'edx/edx-platform':
+            if fork_name == 'openedx/edx-platform':
                 return []
             elif fork_name == 'source/repo1':
                 return [test_data[0]['pr']]  # first PR
