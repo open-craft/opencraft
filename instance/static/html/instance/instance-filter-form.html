@@ -1,0 +1,94 @@
+<form novalidate ng-submit="submit()">
+  <div class="large-12 columns">
+    <h3>Filter Instances</h3>
+  </div>
+  
+  <div class="large-3 columns">
+    <label>Instance Name
+      <input type="text" ng-model="filters.name" />
+    </label>
+  </div>
+  <div class="large-3 columns">
+    <label>Notes
+      <input type="text" ng-model="filters.notes" />
+    </label>
+  </div>
+  <div class="large-3 columns">
+    <label>Status
+      <angucomplete-alt
+        pause="100"
+        selected-object="dropdownSelectionChanged"
+        input-name="status"
+        local-data="statusList"
+        search-fields="name"
+        title-field="name"
+        minlength="0"
+        input-changed="dropdownSelectionChanged"
+        initial-value="initialValues.status"
+      />
+      
+    </label>
+  </div>
+  <div class="large-3 columns">
+    <label>Tag
+      <angucomplete-alt
+        pause="100"
+        selected-object="dropdownSelectionChanged"
+        input-name="tag"
+        local-data="instanceTagList"
+        search-fields="name"
+        title-field="name"
+        minlength="0"
+        input-changed="dropdownSelectionChanged"
+        initial-value="initialValues.tag"
+      />
+      
+    </label>
+  </div>
+  <div class="large-3 columns">
+    <label>OpenEdx Release
+      <angucomplete-alt
+        pause="100"
+        selected-object="dropdownSelectionChanged"
+        input-name="openedx_release"
+        local-data="openEdxReleaseList"
+        search-fields="name"
+        title-field="name"
+        minlength="0"
+        input-changed="dropdownSelectionChanged"
+        initial-value="initialValues.openedx_release"
+      />
+    </label>
+  </div>
+  <div class="large-3 columns">
+    <label>Deployment Type
+      <angucomplete-alt
+        pause="100"
+        selected-object="dropdownSelectionChanged"
+        input-name="deployment_type"
+        local-data="deploymentTypeList"
+        search-fields="name,value"
+        title-field="value"
+        minlength="0"
+        input-changed="dropdownSelectionChanged"
+        initial-value="initialValues.deployment_type"
+      />
+      
+    </label>
+  </div>
+  <div class="large-3 columns">
+    <label>Environment</label>
+    <input type="radio" name="lifecycle" value="production" id="lifecycle-production" ng-model="filters.lifecycle">
+    <label class="inline" for="lifecycle-production">Production</label>
+    
+    <input type="radio" name="lifecycle" value="sandbox" id="lifecycle-sandbox" ng-model="filters.lifecycle">
+    <label class="inline" for="lifecycle-sandbox">Sandbox</label>
+    
+    <input type="radio" name="lifecycle" value="" id="lifecycle-all" ng-model="filters.lifecycle">
+    <label class="inline" for="lifecycle-all">All</label>
+  </div>
+  
+  <div class="large-3 columns">
+    <button type="submit" class="button">Filter Instances</button>
+  </div>
+</form>

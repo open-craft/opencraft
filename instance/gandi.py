@@ -106,7 +106,7 @@ class GandiV5API:
         Encapsulate logic that is common to high-level DNS operations: grab the global lock, do the operation,
         and retry the whole procedure multiple times if necessary.
         """
-        with cache.lock('gandi_set_dns_record'):  # Only do one DNS update at a time
+        with cache.lock('gandi_set_dns_record', timeout=settings.REDIS_LOCK_TIMEOUT):
             for i in range(1, attempts + 1):
                 try:
                     logger.info('%s (attempt %d out %d)', log_msg, i, attempts)

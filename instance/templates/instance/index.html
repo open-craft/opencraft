@@ -9,7 +9,8 @@
 
 {% block css %}
 {% compress css %}
-<link href="{% static "scss/instance.scss" %}" type="text/x-scss" rel="stylesheet"/>
+  <link href="{% static "scss/instance.scss" %}" type="text/x-scss" rel="stylesheet"/>
+  <link href="{% static "scss/angucomplete-alt.scss" %}" type="text/x-scss" rel="stylesheet"/>
 {% endcompress %}
 {% endblock css %}
 
@@ -42,6 +43,7 @@
 {% block body_js %}
 <script src='{% static "external/js/angular-sanitize.min.js" %}'></script>
 <script src="{% static "external/js/marked.min.js" %}"></script>
+<script src="{% static "external/js/angucomplete-alt.min.js" %}"></script>
 <script src="{% static "js/src/instance.js" %}"></script>
 <script src="{% static "js/src/openedx_appserver.js" %}"></script>
 {% endblock body_js %}

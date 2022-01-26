@@ -24,14 +24,18 @@ CDNJS = https://cdnjs.cloudflare.com/ajax/libs
 # Files #######################################################################
 
 all: angular.min.js angular.min.js.map angular-mocks.js angular-route.min.js angular-route.min.js.map \
-     angular-ui-router.min.js angular-sanitize.min.js django-angular.min.js icheck.min.js jquery.min.js \
-     jshint.js marked.min.js restangular.min.js underscore-min.js underscore-min.map zxcvbn.js
+     angucomplete-alt.min.js angular-ui-router.min.js angular-sanitize.min.js django-angular.min.js \
+     icheck.min.js jquery.min.js jshint.js marked.min.js restangular.min.js underscore-min.js \
+     underscore-min.map zxcvbn.js
 
 angular.min.js:
 	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular.min.js
 
 angular.min.js.map:
 	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular.min.js.map
+
+angucomplete-alt.min.js:
+	$(GET) $@ $(CDNJS)/angucomplete-alt/3.0.0/angucomplete-alt.min.js
 
 angular-mocks.js:
 	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-mocks.js

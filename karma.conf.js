@@ -21,6 +21,7 @@ module.exports = function(config) {
       'static/external/js/angular-route.min.js',
       'static/external/js/angular-ui-router.min.js',
       'static/external/js/angular-sanitize.min.js',
+      'static/external/js/angucomplete-alt.min.js',
       'static/external/js/marked.min.js',
       'static/js/dist/angular-foundation-tpls.js',
       'static/external/js/restangular.min.js',
