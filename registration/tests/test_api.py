@@ -86,6 +86,9 @@ class AccountAPITestCase(APITestCase):
         # Allow registration with or without subscribing to updates
         ({"subscribe_to_updates": True}),
         ({"subscribe_to_updates": False}),
+        ({'password': 'Thisisapassword123()'}),
+        ({'password': 'TrickyPassword*'}),
+        ({'password': 'TrickyPassword[]'}),
     )
     def test_account_creation_success(self, override_data):
         """
