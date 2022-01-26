@@ -10,7 +10,7 @@ def migrate_urls(apps, schema_editor):
     instances = Instance.objects.exclude(github_pr_number__isnull=True)
     for instance in instances:
         instance.github_pr_url = 'https://github.com/{fork}/pull/{number}'.format(
-            fork=getattr(settings, 'DEFAULT_FORK', 'edx/edx-platform'),
+            fork=getattr(settings, 'DEFAULT_FORK', 'openedx/edx-platform'),
             number=instance.github_pr_number
         )
         instance.save()

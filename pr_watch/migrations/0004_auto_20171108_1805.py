@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         # To make all PR keep working, we try to use the old "watched fork name" and "watched organization" defined in
         # the .env file if they are still there (this will be the case when migrating instances which had PRs watcher).
         # After WATCH_FORK and WATCH_ORGANIZATION are removed from .env, we fall back to other sensible defaults
-        fork_name = env("WATCH_FORK", default=getattr(settings, 'DEFAULT_FORK', None) or 'edx/edx-platform')
+        fork_name = env("WATCH_FORK", default=getattr(settings, 'DEFAULT_FORK', None) or 'openedx/edx-platform')
         organization = env("WATCH_ORGANIZATION", default='edx')
         default_fork = WatchedFork.objects.create(
             enabled=True,

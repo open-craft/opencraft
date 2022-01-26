@@ -224,7 +224,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "edx_platform_repo": self.edx_platform_repository_url,
 
             # Pin down dependencies to specific (known to be compatible) commits.
-            # After this PR (https://github.com/edx/configuration/pull/5827), some lower
+            # After this PR (https://github.com/openedx/configuration/pull/5827), some lower
             # case variables will be deprecated
             "edx_platform_version": self.edx_platform_commit,
             "EDX_PLATFORM_VERSION": self.edx_platform_commit,
@@ -238,7 +238,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "xqueue_version": self.openedx_release,
             "XQUEUE_VERSION": self.openedx_release,
 
-            # After this PR (https://github.com/edx/configuration/pull/5827), some lower
+            # After this PR (https://github.com/openedx/configuration/pull/5827), some lower
             # case variables will be deprecated
             "certs_version": self.openedx_release,
             "CERTS_VERSION": self.openedx_release,
@@ -262,7 +262,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_TIME_ZONE": 'UTC',
 
             # The ansible playbooks in 'configuration' use 3 different variables
-            # (see https://github.com/edx/configuration/pull/5992);
+            # (see https://github.com/openedx/configuration/pull/5992);
             # to preserve that behavior but still provide "OpenCraft defaults"
             # we set EDXAPP_FEATURES_EXTRA, which may be overridden by user-provided
             # values.
@@ -488,7 +488,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
         if self._is_openedx_release_in(['lilac']):
             template["EDXAPP_ENABLE_SYSADMIN_DASHBOARD"] = False
             # Configuration for MFEs which are enabled by default in lilac. See
-            # https://github.com/edx/configuration/blob/open-release/lilac.2/playbooks/roles/mfe_deployer/defaults/main.yml#L10-L27
+            # https://github.com/openedx/configuration/blob/open-release/lilac.2/playbooks/roles/mfe_deployer/defaults/main.yml#L10-L27
             template.update({
                 "MFES": [
                     {

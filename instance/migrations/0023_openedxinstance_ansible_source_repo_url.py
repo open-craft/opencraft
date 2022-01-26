@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='openedxinstance',
             name='ansible_source_repo_url',
-            field=models.URLField(default='https://github.com/edx/configuration.git', max_length=256),
+            field=models.URLField(default='https://github.com/openedx/configuration.git', max_length=256),
         ),
     ]
