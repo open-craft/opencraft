@@ -153,6 +153,7 @@ def production_instance_factory(**kwargs) -> GroveInstance:
     repository = get_default_repository()
     project_id = repository.project_id
     instance_id = repository.unleash_instance_id
+    instance_kwargs.update(kwargs)
 
     if is_feature_enabled(repository.gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
         instance_kwargs.update({"repository": repository})
@@ -160,6 +161,5 @@ def production_instance_factory(**kwargs) -> GroveInstance:
         # Create Grove instance
         return GroveInstance.objects.create(**instance_kwargs)
 
-    instance_kwargs.update(kwargs)
     production_instance = GroveInstance.objects.create(**instance_kwargs)
     return production_instance
