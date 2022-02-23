@@ -78,3 +78,10 @@ class GroveInstance(
     )
 
     successfully_provisioned = models.BooleanField(default=False)
+
+    def get_latest_deployment(self):
+        """ The latest GroveDeployment associated with this instance. """
+        deployment = super(GroveInstance, self).get_latest_deployment()
+        if deployment:
+            return deployment.grovedeployment
+        return None

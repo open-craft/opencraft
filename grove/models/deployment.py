@@ -26,7 +26,7 @@ from django.db import models
 from ruamel import yaml
 from django.db import transaction
 
-
+from grove.models.gitlabpipeline import GitlabPipeline
 from instance.models.deployment import Deployment
 
 
@@ -51,6 +51,7 @@ class GroveDeployment(Deployment):
         (DEPLOYED, 'Deployed',),
     )
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=PENDING)
+    pipeline = models.ForeignKey(GitlabPipeline, on_delete=models.SET_NULL, null=True, blank=True)
 
 
     def build_trigger_payload(self) -> Dict[str, Any]:
@@ -83,3 +84,10 @@ class GroveDeployment(Deployment):
             self.status = self.TRIGGERED
             self.save()
             return response
+
+    def check_status(self) -> Optional[Dict[str, Any]]:
+        """
+        Check gitlab pipeline status
+        """
+        pipeline = self.pipeline
+        return pipeline.get_deployment_status()

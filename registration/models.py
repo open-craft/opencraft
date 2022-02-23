@@ -444,7 +444,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         """
         Return the activation date for the first AppServer to activate.
         """
-        if self.instance:
+        if self.instance and not isinstance(self.instance, GroveInstance):
             return self.instance.first_activated
         return None
 

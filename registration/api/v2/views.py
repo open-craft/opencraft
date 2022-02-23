@@ -31,6 +31,9 @@ from django.utils.text import slugify
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
+
+from grove.models.instance import GroveInstance
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, ValidationError
@@ -728,17 +731,23 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         deployment_type = None
 
         if (not instance or
-                not instance.get_latest_deployment() or
-                not instance.successfully_provisioned):
-            # Set to preparing if no existing deployments or provisioned appservers found
-            deployment_status = DeploymentState.preparing
+                not instance.get_latest_deployment()):
+            if isinstance(instance, GroveInstance):
+                deployment_status = DeploymentState.preparing
+            elif not instance.successfully_provisioned:
+                # Set to preparing if no existing deployments or provisioned appservers found
+                deployment_status = DeploymentState.preparing
         else:
             deployment = instance.get_latest_deployment()
-            deployment_status = deployment.status()
+            if isinstance(instance, GroveInstance):
+                deployment_status = deployment.check_status()
+            else:
+                deployment_status = deployment.status()
             if deployment_status == DeploymentState.healthy and undeployed_changes:
                 deployment_status = DeploymentState.changes_pending
             deployment_type = deployment.type
-            deployed_changes = deployment.changes
+            if isinstance(deployment, OpenEdXDeployment):
+                deployed_changes = deployment.changes
 
         data = {
             'undeployed_changes': undeployed_changes,

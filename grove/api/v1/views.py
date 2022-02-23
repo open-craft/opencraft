@@ -19,12 +19,19 @@
 API views for the Grove app.
 """
 
+import json
+import re
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
 
 from grove.models.deployment import GroveDeployment
+from grove.models.gitlabpipeline import GitlabPipeline
 from grove.serializers import GroveDeploymentSerializer
+from instance.models.instance import InstanceReference
 from opencraft.swagger import viewset_swagger_helper
 
 
@@ -67,3 +74,44 @@ class GroveDeploymentAPIView(
 
         return GroveDeployment.objects.filter(instance__creator__user=user)
 
+
+def is_deployment_pipeline(body):
+    """
+    Check if the pipeline is related to instance deployment
+    """
+    if body.get('commit', '') and "deployment" in body['commit']['title']:
+        return True
+    return False
+
+
+def get_instance(body):
+    """
+    Fetch instance related to deployment pipeline
+    """
+    instance_name = re.findall("deployment\/(\w+)\/", body['commit']['title'])[0]
+    instance = InstanceReference.objects.get(name=instance_name)
+    return instance
+
+
+@require_POST
+@csrf_exempt
+def gitlab_webhook(request):
+    """
+    Webhook endpoint for gitlab pipeline
+    """
+    payload = json.loads(request.body.decode('utf-8'))
+    if is_deployment_pipeline(payload):
+        pipeline_instance = get_instance(payload)
+        if GitlabPipeline.objects.filter(instance=pipeline_instance).exists():
+            # call status update method
+            pipeline_obj = GitlabPipeline.objects.get(instance=pipeline_instance)
+            new_status = payload['object_attributes']['status']
+            pipeline_obj.update_status(new_status)
+            pipeline_obj.save()
+        else:
+            new_pipeline = GitlabPipeline.objects.create(instance=pipeline_instance)
+            deployment_obj = GroveDeployment.objects.get(instance=pipeline_instance)
+            deployment_obj.pipeline = new_pipeline
+            deployment_obj.save()
+
+    return HttpResponse('Webhook received', status=200)

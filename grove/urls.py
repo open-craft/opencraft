@@ -21,10 +21,12 @@ URL and routing registration for the Grove app.
 
 from rest_framework import routers
 
-from grove.api.v1.views import GroveDeploymentAPIView
+from grove.api.v1.views import GroveDeploymentAPIView, gitlab_webhook
+
 
 router = routers.DefaultRouter()
 
 router.register(r"deployments", GroveDeploymentAPIView)
+router.register(r"webhook", gitlab_webhook)
 
 urlpatterns = router.urls
