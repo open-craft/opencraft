@@ -51,6 +51,7 @@ def trigger_grove_deployment():
             #
             # so, instead we will not trigger any deployments and wait for existing
             # one's to finish, so that we can deploy this new instance.
+            logger.info("Cannot trigger deployment as there are existing ones running. Need to wait for them to finish.")
             break
 
         logger.info('Triggering deployment for %s!', len(deployment.instance.name))

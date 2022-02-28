@@ -15,9 +15,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-"""
-API model serializers for the Grove app.
-"""
 
 from rest_framework import serializers
 
@@ -26,7 +23,7 @@ from grove.models.deployment import GroveDeployment
 
 class GroveDeploymentSerializer(serializers.ModelSerializer):
     """
-
+    Model serializer for the Grove deployment.
     """
 
     class Meta:

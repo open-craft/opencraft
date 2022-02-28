@@ -28,6 +28,14 @@ from django.core.exceptions import ImproperlyConfigured
 
 GitLabToken: Optional[str] = None
 
+PIPELINE_RUNNING_STATUSES = [
+    'created',
+    'waiting_for_resource',
+    'preparing',
+    'pending',
+    'running'
+]
+
 
 class GitLabClient:
     """
@@ -88,6 +96,6 @@ class GitLabClient:
         for pipeline in pipelines:
             # any pipeline that has status any of created, waiting_for_resource, preparing,
             # pending or running will be considered as running pipeline.
-            if pipeline['status'] in ['created', 'waiting_for_resource', 'preparing', 'pending', 'running']:
+            if pipeline['status'] in PIPELINE_RUNNING_STATUSES:
                 return True
         return False
