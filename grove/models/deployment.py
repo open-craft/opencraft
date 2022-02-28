@@ -44,11 +44,13 @@ class GroveDeployment(Deployment):
     PENDING = 0
     TRIGGERED = 1
     DEPLOYED = 2
+    CANCELLED = 3
 
     STATUS_CHOICES = (
         (PENDING, 'Pending',),
         (TRIGGERED, 'Triggered Deployment',),
         (DEPLOYED, 'Deployed',),
+        (CANCELLED, 'Cancelled'),
     )
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=PENDING)
     pipeline = models.ForeignKey(GitlabPipeline, on_delete=models.SET_NULL, null=True, blank=True)
@@ -71,6 +73,13 @@ class GroveDeployment(Deployment):
         payload.update(self.overrides)
         return payload
 
+    def build_abort_pipeline_trigger_payload(self, pipeline_id) -> Dict[str, Any]:
+        payload = {
+            "variables[ABORT_DEPLOYMENT_TRIGGER]": True,
+            "variables[PIPELINE_ID]": pipeline_id,
+        }
+        return payload
+
     def trigger_pipeline(self) -> Optional[Dict[str, Any]]:
         """
         Trigger a deployment pipeline on GitLab.
@@ -91,3 +100,17 @@ class GroveDeployment(Deployment):
         """
         pipeline = self.pipeline
         return pipeline.get_deployment_status()
+
+    def cancel_deployment(self) -> Optional[Dict[str, Any]]:
+        """
+        Cancel ongoing deployment pipeline on Gitlab
+        """
+        instance = self.instance.instance
+        gitlab_client = instance.repository.gitlab_client
+        pipeline_id = self.pipeline.pipeline_id
+        response = gitlab_client.trigger_pipeline(
+            variables=self.build_abort_pipeline_trigger_payload(pipeline_id)
+        )
+        self.status = self.CANCELLED
+        self.save()
+        return response

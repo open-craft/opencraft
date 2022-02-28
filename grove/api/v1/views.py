@@ -88,9 +88,12 @@ def get_instance(body):
     """
     Fetch instance related to deployment pipeline
     """
-    instance_name = re.findall("deployment\/(\w+)\/", body['commit']['title'])[0]
-    instance = InstanceReference.objects.get(name=instance_name)
-    return instance
+    instance_name = re.findall("deployment\/(\w+)\/", body['commit']['title'])
+    if instance_name:
+        instance = InstanceReference.objects.get(name=instance_name[0])
+        return instance
+    else:
+        return None
 
 
 @require_POST
@@ -102,16 +105,19 @@ def gitlab_webhook(request):
     payload = json.loads(request.body.decode('utf-8'))
     if is_deployment_pipeline(payload):
         pipeline_instance = get_instance(payload)
-        if GitlabPipeline.objects.filter(instance=pipeline_instance).exists():
-            # call status update method
-            pipeline_obj = GitlabPipeline.objects.get(instance=pipeline_instance)
-            new_status = payload['object_attributes']['status']
-            pipeline_obj.update_status(new_status)
-            pipeline_obj.save()
-        else:
-            new_pipeline = GitlabPipeline.objects.create(instance=pipeline_instance)
-            deployment_obj = GroveDeployment.objects.get(instance=pipeline_instance)
-            deployment_obj.pipeline = new_pipeline
-            deployment_obj.save()
+        if pipeline_instance:
+            pipeline_id = payload['object_attributes']['id']
+            if GitlabPipeline.objects.filter(pipeline_id=pipeline_id).exists():
+                # pipeline already exists, call status update method
+                pipeline_obj = GitlabPipeline.objects.get(pipeline_id=pipeline_id)
+                new_status = payload['object_attributes']['status']
+                pipeline_obj.update_status(new_status)
+                pipeline_obj.save()
+            else:
+                # create new pipeline object for the deployment object
+                deployment = pipeline_instance.instance.get_latest_deployment()
+                new_pipeline = GitlabPipeline.objects.create(pipeline_id=pipeline_id, instance=pipeline_instance)
+                deployment.pipeline = new_pipeline
+                deployment.save()
 
     return HttpResponse('Webhook received', status=200)
