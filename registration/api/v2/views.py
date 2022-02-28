@@ -33,6 +33,7 @@ from drf_yasg.utils import swagger_auto_schema
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 
 from grove.models.instance import GroveInstance
+from grove.models.deployment import GroveDeployment
 
 from rest_framework import status
 from rest_framework.decorators import action
@@ -690,13 +691,19 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
             )
 
         deployment = instance.get_latest_deployment()
-        if deployment and deployment.status() == DeploymentState.preparing:
-            raise ValidationError(
-                'You must wait for your initial instance to finish building.', code='first-build-incomplete',
-            )
+        if deployment:
+            if isinstance(deployment, GroveDeployment):
+                deployment_status = deployment.check_status()
+            else:
+                deployment_status = deployment.status()
+            if deployment_status == DeploymentState.preparing:
+                raise ValidationError(
+                    'You must wait for your initial instance to finish building.', code='first-build-incomplete',
+                )
 
-        if not cancel_pending_deployments and not force and instance.get_provisioning_appservers().exists():
-            raise ValidationError("Instance launch already in progress", code="in-progress")
+        if not isinstance(instance, GroveInstance):
+            if not cancel_pending_deployments and not force and instance.get_provisioning_appservers().exists():
+                raise ValidationError("Instance launch already in progress", code="in-progress")
 
         if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
             raise ValidationError(
@@ -772,7 +779,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         application = self.get_object()
         instance = application.instance
 
-        if not instance.get_active_appservers().exists():
+        if not isinstance(instance, GroveInstance) and not instance.get_active_appservers().exists():
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
                 data={
