@@ -340,11 +340,16 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
                 self.instance.name
             )
 
-        self.is_active = active
-        self.save()
-        self.instance.reconfigure_load_balancer()
         if active:
             self.instance.enable_monitoring()
+
+        # Mark the app server active only if all necessary methods ran successfully.
+        # For more information, see https://tasks.opencraft.com/browse/SE-5391
+        self.is_active = active
+        self.save()
+
+        self.instance.reconfigure_load_balancer()
+
         self.instance.set_active_vm_dns_records(deactivate_appserver=not active)
         self.instance.update_consul_metadata()
 
