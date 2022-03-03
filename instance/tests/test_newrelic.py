@@ -258,7 +258,6 @@ class NewRelicTestCase(TestCase):
                 'type': 'static',
                 'name': condition_name,
                 'enabled': True,
-                'value_function': 'sum',
                 'terms': [{
                     'duration': '16',
                     'threshold': '2',
@@ -268,11 +267,14 @@ class NewRelicTestCase(TestCase):
                 }],
                 'nrql': {
                     'query': query,
-                    'since_value': '3',
                 },
                 'signal': {
+                    'aggregation_delay': 120,
+                    'aggregation_method': 'CADENCE',
+                    'aggregation_window': '960',
                     'fill_option': 'static',
-                    'fill_value': '0'
+                    'fill_value': '0.0',
+                    'slide_by': 60
                 },
                 'expiration': {
                     'expiration_duration': '960',
