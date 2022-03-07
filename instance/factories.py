@@ -37,6 +37,8 @@ from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
 from grove.models.repository import get_default_repository
 
+from typing import Union
+
 
 # Logging #####################################################################
 
@@ -96,11 +98,11 @@ def instance_factory(**kwargs):
     return instance
 
 
-def production_instance_factory(**kwargs) -> GroveInstance:
+def production_instance_factory(**kwargs) -> Union[GroveInstance, OpenEdXInstance]:
     """
     Factory function for creating production instances.
 
-    Returns a newly created OpenEdXInstance.
+    Returns a newly created Instance.
 
     Callers can use keyword arguments to pass in non-default values
     for any field that is defined on the OpenEdXInstance model.
@@ -161,5 +163,5 @@ def production_instance_factory(**kwargs) -> GroveInstance:
         # Create Grove instance
         return GroveInstance.objects.create(**instance_kwargs)
 
-    production_instance = GroveInstance.objects.create(**instance_kwargs)
+    production_instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return production_instance

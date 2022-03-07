@@ -171,11 +171,11 @@ def publish_data(data):
     async_to_sync(channel_layer.group_send)('ws', {'type': 'notification', 'message': data})
 
 
-def build_instance_config_diff(instance_config: 'BetaTestApplication'):
+def build_instance_config_diff(instance_config: 'BetaTestApplication', instance=None):
     """
     Builds an configuration diff for the provided instance configuration.
     """
-    instance = instance_config.instance
+    instance = instance
     if not instance:
         instance = object()
     original_config = {}
@@ -236,16 +236,20 @@ def create_new_deployment(
     Create a new deployment for an existing instance, and start it asynchronously
     """
     # pylint: disable=cyclic-import, useless-suppression
+    from django.contrib.contenttypes.models import ContentType
     from grove.models.deployment import GroveDeployment
     from grove.models.instance import GroveInstance
     from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
     from instance.models.deployment import DeploymentType
     from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
     from instance.tasks import start_deployment
+    from registration.models import BetaTestApplication
 
     changes = None
-    if instance.betatestapplication_set.exists():
-        changes = build_instance_config_diff(instance.betatestapplication_set.get())
+    if len(instance.betatestapplication.all()) > 0:
+        instance_type = ContentType.objects.get_for_model(instance)
+        beta_test_application = BetaTestApplication.objects.filter(instance_type=instance_type, instance_id=instance.id)
+        changes = build_instance_config_diff(beta_test_application[0], instance)
 
     deployment_type = deployment_type or DeploymentType.unknown
     creator_profile = creator and creator.profile
