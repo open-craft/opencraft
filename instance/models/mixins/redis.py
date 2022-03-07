@@ -125,7 +125,10 @@ class RedisInstanceMixin(models.Model):
         client.acl_setuser(
             username=self.redis_username,
             passwords=[f"+{self.redis_password}"],
-            keys=[f"{self.redis_key_prefix}*"],
+            keys=[
+                f"{self.redis_key_prefix}*",
+                f"SINGLE_BEAT_{self.redis_key_prefix}",
+            ],
             commands=["+@all"],
             enabled=True
         )

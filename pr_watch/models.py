@@ -52,7 +52,7 @@ sha1_validator = RegexValidator(regex='^[0-9a-f]{40}$', message='Full SHA1 hash 
 
 class WatchedFork(models.Model):
     """
-    Represents a fork of edx/edx-platform whose PRs we watch.
+    Represents a fork of openedx/edx-platform whose PRs we watch.
     """
     # uses internal id key
     enabled = models.BooleanField(default=True)
@@ -258,9 +258,9 @@ class WatchedPullRequest(models.Model):
     @property
     def target_fork_name(self):
         """
-        Get the full name of the target repo/fork (e.g. 'edx/edx-platform')
+        Get the full name of the target repo/fork (e.g. 'openedx/edx-platform')
         """
-        # Split up a URL like https://github.com/edx/edx-platform/pull/12345678
+        # Split up a URL like https://github.com/openedx/edx-platform/pull/12345678
         org, repo, pull, dummy = self.github_pr_url.split('/')[-4:]
         assert pull == "pull"
         return "{}/{}".format(org, repo)

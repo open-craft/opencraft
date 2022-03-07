@@ -26,16 +26,18 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from instance.models.instance import InstanceReference
+from instance.api.permissions import IsSuperUser
+from instance.models.instance import InstanceReference, InstanceTag
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.serializers.instance import (
     InstanceReferenceBasicSerializer,
     InstanceReferenceDetailedSerializer,
     InstanceLogSerializer,
-    InstanceAppServerSerializer
+    InstanceAppServerSerializer,
+    InstanceTagSerializer
 )
 
-from .filters import IsOrganizationOwnerFilterBackendInstance
+from .filters import IsOrganizationOwnerFilterBackendInstance, InstanceFilterBackend
 
 
 # Views - API #################################################################
@@ -69,7 +71,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = InstanceReference.objects.all()
     serializer_class = InstanceReferenceDetailedSerializer
-    filter_backends = (IsOrganizationOwnerFilterBackendInstance,)
+    filter_backends = (IsOrganizationOwnerFilterBackendInstance, InstanceFilterBackend)
 
     def get_queryset(self):
         # Don't load all columns, because some of them have very big data
@@ -144,3 +146,12 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
                 {"error": "Instance attributes are not valid."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class InstanceTagViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API to list all *unique* InstanceTag instances.
+    """
+    queryset = InstanceTag.objects.order_by('name').filter(openedxinstance__isnull=False)
+    serializer_class = InstanceTagSerializer
+    permission_classes = [IsSuperUser]

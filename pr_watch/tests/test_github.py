@@ -52,12 +52,12 @@ class GitHubTestCase(TestCase):
         Obtaining `commit_id` from a repo reference (eg. a branch)
         """
         responses.add(
-            responses.GET, 'https://api.github.com/repos/edx/edx-platform/git/refs/heads/master',
+            responses.GET, 'https://api.github.com/repos/openedx/edx-platform/git/refs/heads/master',
             body=json.dumps({'object': {'sha': 'test-sha'}}),
             content_type='application/json; charset=utf8',
             status=200)
         self.assertEqual(
-            github.get_commit_id_from_ref('edx/edx-platform', 'master'),
+            github.get_commit_id_from_ref('openedx/edx-platform', 'master'),
             'test-sha')
 
     @responses.activate
@@ -66,13 +66,13 @@ class GitHubTestCase(TestCase):
         Attempt to fetch a branch that has been deleted
         """
         responses.add(
-            responses.GET, 'https://api.github.com/repos/edx/edx-platform/git/refs/heads/deleted-branch',
+            responses.GET, 'https://api.github.com/repos/openedx/edx-platform/git/refs/heads/deleted-branch',
             body=json.dumps({'message': 'Not Found'}),
             content_type='application/json; charset=utf8',
             status=404)
 
         with self.assertRaises(github.ObjectDoesNotExist):
-            github.get_commit_id_from_ref('edx/edx-platform', 'deleted-branch')
+            github.get_commit_id_from_ref('openedx/edx-platform', 'deleted-branch')
 
     def test_get_settings_from_pr_body(self):
         """
@@ -96,12 +96,12 @@ class GitHubTestCase(TestCase):
         """
         pr_fixture = get_raw_fixture('github/api_pr.json')
         responses.add(
-            responses.GET, 'https://api.github.com/repos/edx/edx-platform/pulls/8474',
+            responses.GET, 'https://api.github.com/repos/openedx/edx-platform/pulls/8474',
             body=pr_fixture,
             content_type='application/json; charset=utf8',
             status=200
         )
-        pr_info = github.get_pr_info_by_number('edx/edx-platform', 8474)
+        pr_info = github.get_pr_info_by_number('openedx/edx-platform', 8474)
         expected_pr_info = json.loads(pr_fixture)
         self.assertEqual(pr_info, expected_pr_info)
 
@@ -111,13 +111,13 @@ class GitHubTestCase(TestCase):
         Get PR object for existing PR number
         """
         responses.add(
-            responses.GET, 'https://api.github.com/repos/edx/edx-platform/pulls/8474',
+            responses.GET, 'https://api.github.com/repos/openedx/edx-platform/pulls/8474',
             body=get_raw_fixture('github/api_pr.json'),
             content_type='application/json; charset=utf8',
             status=200
         )
 
-        pr = github.get_pr_by_number('edx/edx-platform', 8474)
+        pr = github.get_pr_by_number('openedx/edx-platform', 8474)
         self.assertEqual(
             pr.title,
             'Add feature flag to allow hiding the discussion tab for individual courses.')
@@ -127,7 +127,7 @@ class GitHubTestCase(TestCase):
             '- - -\r\n**Settings**\r\n```yaml\r\nEDXAPP_FEATURES:\r\n  ALLOW: true\r\n```')
         self.assertEqual(pr.number, 8474)
         self.assertEqual(pr.fork_name, 'open-craft/edx-platform')
-        self.assertEqual(pr.repo_name, 'edx/edx-platform')
+        self.assertEqual(pr.repo_name, 'openedx/edx-platform')
         self.assertEqual(pr.branch_name, 'smarnach/hide-discussion-tab')
         self.assertEqual(pr.extra_settings, 'EDXAPP_FEATURES:\r\n  ALLOW: true\r\n')
         self.assertEqual(pr.username, 'smarnach')
@@ -138,13 +138,13 @@ class GitHubTestCase(TestCase):
         Get PR object for non-existing PR
         """
         responses.add(
-            responses.GET, 'https://api.github.com/repos/edx/edx-platform/pulls/1234567890',
+            responses.GET, 'https://api.github.com/repos/openedx/edx-platform/pulls/1234567890',
             body=json.dumps({'message': 'Not Found'}),
             content_type='application/json; charset=utf8',
             status=404)
 
         with self.assertRaises(github.ObjectDoesNotExist):
-            github.get_pr_by_number('edx/edx-platform', 1234567890)
+            github.get_pr_by_number('openedx/edx-platform', 1234567890)
 
     @responses.activate
     @patch('pr_watch.github.get_pr_by_number')
@@ -154,7 +154,7 @@ class GitHubTestCase(TestCase):
         """
         responses.add(
             responses.GET, 'https://api.github.com/search/issues?sort=created'
-                           '&q=is:open is:pr author:itsjeyd repo:edx/edx-platform',
+                           '&q=is:open is:pr author:itsjeyd repo:openedx/edx-platform',
             match_querystring=True,
             body=get_raw_fixture('github/api_search_open_prs_user.json'),
             content_type='application/json; charset=utf8',
@@ -163,8 +163,8 @@ class GitHubTestCase(TestCase):
         mock_get_pr_by_number.side_effect = lambda fork_name, pr_number: [fork_name, pr_number]
 
         self.assertEqual(
-            github.get_pr_list_from_username('itsjeyd', 'edx/edx-platform'),
-            [['edx/edx-platform', 9147], ['edx/edx-platform', 9146]]
+            github.get_pr_list_from_username('itsjeyd', 'openedx/edx-platform'),
+            [['openedx/edx-platform', 9147], ['openedx/edx-platform', 9146]]
         )
 
     @responses.activate
@@ -174,11 +174,11 @@ class GitHubTestCase(TestCase):
         Get list of open PR for a list of users
         """
         # Verify we get no PRs when invoking the function with an empty username list.
-        self.assertEqual(github.get_pr_list_from_usernames([], 'edx/edx-platform'), [])
+        self.assertEqual(github.get_pr_list_from_usernames([], 'openedx/edx-platform'), [])
 
         responses.add(
             responses.GET, 'https://api.github.com/search/issues?sort=created&q=is:open '
-                           'is:pr author:itsjeyd author:haikuginger repo:edx/edx-platform',
+                           'is:pr author:itsjeyd author:haikuginger repo:openedx/edx-platform',
             match_querystring=True,
             body=get_raw_fixture('github/api_search_open_prs_multiple_users.json'),
             content_type='application/json; charset=utf8',
@@ -187,8 +187,8 @@ class GitHubTestCase(TestCase):
         mock_get_pr_by_number.side_effect = lambda fork_name, pr_number: [fork_name, pr_number]
 
         self.assertEqual(
-            github.get_pr_list_from_usernames(['itsjeyd', 'haikuginger'], 'edx/edx-platform'),
-            [['edx/edx-platform', 9147], ['edx/edx-platform', 9146], ['edx/edx-platform', 15921]]
+            github.get_pr_list_from_usernames(['itsjeyd', 'haikuginger'], 'openedx/edx-platform'),
+            [['openedx/edx-platform', 9147], ['openedx/edx-platform', 9146], ['openedx/edx-platform', 15921]]
         )
 
     def test_parse_date(self):

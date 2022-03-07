@@ -414,7 +414,7 @@ BILLING_RATE = env('BILLING_RATE', default=3)
 GITHUB_ACCESS_TOKEN = env('GITHUB_ACCESS_TOKEN')
 
 # Default github repository to pull code from
-DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
+DEFAULT_FORK = env('DEFAULT_FORK', default='openedx/edx-platform')
 DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(DEFAULT_FORK)
 
 # Whether to actively watch forks for new pull requests. Set to false if this instance is not responsible for
@@ -432,10 +432,11 @@ DEFAULT_STUDIO_DOMAIN_PREFIX = env('DEFAULT_STUDIO_DOMAIN_PREFIX', default='stud
 DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX = env('DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX', default='preview.')
 DEFAULT_DISCOVERY_DOMAIN_PREFIX = env('DEFAULT_DISCOVERY_DOMAIN_PREFIX', default='discovery.')
 DEFAULT_ECOMMERCE_DOMAIN_PREFIX = env('DEFAULT_ECOMMERCE_DOMAIN_PREFIX', default='ecommerce.')
+DEFAULT_MFE_DOMAIN_PREFIX = env('DEFAULT_MFE_DOMAIN_PREFIX', default='app.')
 
 # Fork and branch of the Open edX configuration repo used for sandboxes created for PRs.
 DEFAULT_CONFIGURATION_REPO_URL = env(
-    'DEFAULT_CONFIGURATION_REPO_URL', default='https://github.com/edx/configuration.git'
+    'DEFAULT_CONFIGURATION_REPO_URL', default='https://github.com/openedx/configuration.git'
 )
 
 # Default release to use. Should be 'master' or a "named-release/treename.rc" tag, since
@@ -448,7 +449,7 @@ DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEF
 
 # Git ref for stable Open edX release. Used as a default refspec for
 # configuration, edx-platform, forum, notifier, xqueue, and certs when creating production instances.
-OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/koa.3')
+OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/lilac.2')
 
 # The edx-platform repository used by default for production instances
 STABLE_EDX_PLATFORM_REPO_URL = env(
@@ -460,7 +461,7 @@ STABLE_EDX_PLATFORM_COMMIT = env('STABLE_EDX_PLATFORM_COMMIT', default=OPENEDX_R
 STABLE_CONFIGURATION_REPO_URL = env(
     'STABLE_CONFIGURATION_REPO_URL', default=DEFAULT_CONFIGURATION_REPO_URL
 )
-STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default='opencraft-release/koa.3')
+STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default='opencraft-release/lilac.2')
 
 # The name of the security group to use for edxapp App servers.
 # This is used to set appropriate firewall rules to prevent external access to

@@ -189,7 +189,6 @@ describe('Instance app', function () {
                 $scope.instanceLogs = {'log_entries': []};
                 spyOn($scope.instanceLogs.log_entries, 'push');
                 console.log(typeof($scope.instanceLogs.log_entries.push));
-
             });
             it('update the instance details whenever the instance is updated', function() {
                 $scope.webSocketMessageHandler(getBroadcastMessage({type: "instance_update", instance_id: 400}));
@@ -501,6 +500,69 @@ describe('Instance app', function () {
             });
         });
     });
+
+    describe('Instance filter controller', function() {
+        var $scope,
+            controller,
+            deploymentTypeList,
+            instanceTagList,
+            openEdxReleaseList,
+            statusList;
+        
+        
+        beforeEach(function() {
+            inject(function(_$httpBackend_, $rootScope, _$controller_) {
+                httpBackend = _$httpBackend_;
+                $scope = $rootScope.$new();
+                controller = _$controller_('InstanceFilterFormController', { $scope: $scope });
+            });
+            instanceTagList = fixture.load('api/instance_tags_list.json');
+            httpBackend.whenGET('/api/v1/instance_tag/').respond(instanceTagList);
+
+            deploymentTypeList = fixture.load('api/deployment_types_list.json');
+            httpBackend.whenGET('/api/v1/deployment_type/').respond(deploymentTypeList);
+
+            statusList = fixture.load('api/statuses_list.json');
+            httpBackend.whenGET('/api/v1/status/').respond(statusList);
+
+            openEdxReleaseList = fixture.load('api/openedx_release_list.json');
+            httpBackend.whenGET('/api/v1/openedx_release/').respond(openEdxReleaseList);
+            
+            flushHttpBackend();
+        });
+
+        describe('$scope.init', function() {
+            it('loads the instance tags list from the API on init', function() {
+                expect($scope.instanceTagList.length).toEqual(instanceTagList.length);
+                for (var i; i < $scope.instanceTagList.length; i++){
+                    expect($scope.instanceTagList[i]).toEqual(instanceTagList[i]);
+                }
+            });
+
+            it('loads the deployment type list from the API on init', function() {
+                expect($scope.deploymentTypeList.length).toEqual(deploymentTypeList.length);
+                for (var i; i < $scope.deploymentTypeList.length; i++){
+                    expect($scope.deploymentTypeList[i]).toEqual(deploymentTypeList[i]);
+                }
+            });
+
+
+            it('loads the status list from the API on init', function() {
+                expect($scope.statusList.length).toEqual(statusList.length);
+                for (var i; i < $scope.statusList.length; i++){
+                    expect($scope.statusList[i]).toEqual(statusList[i]);
+                }
+            });
+
+            it('loads the openedx release list from the API on init', function() {
+                expect($scope.openEdxReleaseList.length).toEqual(openEdxReleaseList.length);
+                for (var i; i < $scope.openEdxReleaseList.length; i++){
+                    expect($scope.openEdxReleaseList[i]).toEqual(openEdxReleaseList[i]);
+                }
+            });
+        });
+
+    });    
 
     describe('prettifyJSON filter', function() {
         var prettifyJSON;

@@ -184,7 +184,6 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
                 'type': 'static',
                 'name': name,
                 'enabled': True,
-                'value_function': 'sum',
                 'terms': [{
                     'duration': settings.NEWRELIC_NRQL_ALERT_CONDITION_DURATION,
                     'threshold': settings.NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD,
@@ -194,11 +193,14 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
                 }],
                 'nrql': {
                     'query': query,
-                    'since_value': '3',
                 },
                 'signal': {
+                    'aggregation_window': f"{settings.NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION}",
+                    'aggregation_method': 'CADENCE',
+                    'aggregation_delay': 120,
                     'fill_option': 'static',
-                    'fill_value': '0'
+                    'fill_value': '0.0',
+                    'slide_by': 60
                 },
                 'expiration': {
                     'expiration_duration': settings.NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION,

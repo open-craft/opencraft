@@ -80,6 +80,7 @@ class OpenEdXInstance(
 
     betatestapplication = fields.GenericRelation(BetaTestApplication)
     successfully_provisioned = models.BooleanField(default=False)
+    database_name = models.CharField(blank=False, unique=True, max_length=60)
 
     def __init__(self, *args, **kwargs):
         """Init."""
@@ -125,8 +126,7 @@ class OpenEdXInstance(
             return deployment.openedxdeployment
         return None
 
-    @property
-    def database_name(self):
+    def generate_database_name(self):
         """
         The database name used for external databases/storages, if any.
         """
@@ -137,7 +137,7 @@ class OpenEdXInstance(
         # for different services (e.g. xqueue) we don't want to use the maximum length here.
         allowed = string.ascii_letters + string.digits + '_'
         escaped = ''.join(char for char in name if char in allowed)
-        return truncate_name(escaped, length=50)
+        return truncate_name(escaped, length=40)
 
     def save(self, **kwargs):
         """
@@ -156,6 +156,9 @@ class OpenEdXInstance(
 
         if self.random_prefix is not None:
             self.mysql_user = self.random_prefix
+
+        if not self.database_name:
+            self.database_name = self.generate_database_name()
 
         # The instance is newly created
         if not self.pk:

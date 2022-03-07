@@ -57,7 +57,7 @@ class SymbolValidator:
     Symbol password validator
     """
     def validate(self, password, user=None):  # pylint: disable=missing-docstring
-        if not re.findall(r'[,.\\!~`<>\/!?:;"+=\-%\'$&@#{}()_]', password):
+        if not re.findall(r'[,.\\!~`<>\/!?:;"+=\-%\'$&@#{}()\[\]_*]', password):
             raise ValidationError(
                 "The password must contain at least 1 special character.",
                 code='password_no_special_chars',

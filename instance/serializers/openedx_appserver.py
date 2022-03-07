@@ -83,3 +83,12 @@ class SpawnAppServerSerializer(serializers.Serializer):
 
     class Meta:
         fields = ('instance_id', )
+
+
+class OpenEdXReleaseSerializer(serializers.Serializer):
+    """
+    Simple serializer for OpenEdX release names, that are
+    linked to AppServer instances.
+    """
+    id = serializers.CharField(source='name')
+    name = serializers.CharField()

@@ -224,7 +224,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "edx_platform_repo": self.edx_platform_repository_url,
 
             # Pin down dependencies to specific (known to be compatible) commits.
-            # After this PR (https://github.com/edx/configuration/pull/5827), some lower
+            # After this PR (https://github.com/openedx/configuration/pull/5827), some lower
             # case variables will be deprecated
             "edx_platform_version": self.edx_platform_commit,
             "EDX_PLATFORM_VERSION": self.edx_platform_commit,
@@ -238,7 +238,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "xqueue_version": self.openedx_release,
             "XQUEUE_VERSION": self.openedx_release,
 
-            # After this PR (https://github.com/edx/configuration/pull/5827), some lower
+            # After this PR (https://github.com/openedx/configuration/pull/5827), some lower
             # case variables will be deprecated
             "certs_version": self.openedx_release,
             "CERTS_VERSION": self.openedx_release,
@@ -262,7 +262,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_TIME_ZONE": 'UTC',
 
             # The ansible playbooks in 'configuration' use 3 different variables
-            # (see https://github.com/edx/configuration/pull/5992);
+            # (see https://github.com/openedx/configuration/pull/5992);
             # to preserve that behavior but still provide "OpenCraft defaults"
             # we set EDXAPP_FEATURES_EXTRA, which may be overridden by user-provided
             # values.
@@ -485,6 +485,63 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # See https://github.com/open-craft/cs_comments_service/pull/10
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["FORUM_VERSION"] = "opencraft-release/koa.3"
+        if self._is_openedx_release_in(['lilac']):
+            template["EDXAPP_ENABLE_SYSADMIN_DASHBOARD"] = False
+            # Configuration for MFEs which are enabled by default in lilac. See
+            # https://github.com/openedx/configuration/blob/open-release/lilac.2/playbooks/roles/mfe_deployer/defaults/main.yml#L10-L27
+            template.update({
+                "MFES": [
+                    {
+                        "name": "profile",
+                        "repo": "frontend-app-profile",
+                        "public_path": "/profile/"
+                    },
+                    {
+                        "name": "gradebook",
+                        "repo": "frontend-app-gradebook",
+                        "public_path": "/gradebook/"
+                    },
+                    {
+                        "name": "account",
+                        "repo": "frontend-app-account",
+                        "public_path": "/account/"
+                    },
+                ],
+                "MFE_BASE": self.instance.mfe_domain,
+                "MFE_BASE_SCHEMA": "https",
+                "MFE_CREDENTIALS_BASE_URL":  "",
+                "MFE_DEPLOY_COMMON_HOSTNAME": self.instance.mfe_domain,
+                "MFE_DEPLOY_NGINX_PORT": 80,
+                "MFE_DEPLOY_STANDALONE_NGINX": False,
+                "MFE_DEPLOY_VERSION": self.openedx_release,
+                "MFE_SITE_NAME": self.instance.name,
+                # edxapp Configurations
+                "EDXAPP_ENABLE_CORS_HEADERS": True,
+                "EDXAPP_ENABLE_CROSS_DOMAIN_CSRF_COOKIE": True,
+                "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_DOMAIN": ".{}".format(self.instance.domain),
+                "EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_NAME": "cross-domain-cookie-mfe",
+                # NOTE: In maple and later, the URLs will have to be prefixed with https://,
+                # but for lilac, the scheme has to be absent for CORS to work.
+                "EDXAPP_CORS_ORIGIN_WHITELIST": [
+                    self.instance.studio_domain,
+                    self.instance.mfe_domain
+                ],
+                "EDXAPP_CSRF_TRUSTED_ORIGINS": [
+                    self.instance.mfe_domain
+                ],
+                "EDXAPP_SITE_CONFIGURATION": [
+                    {
+                        "values": {
+                            "ENABLE_ORDER_HISTORY_MICROFRONTEND": False,
+                            "ENABLE_ACCOUNT_MICROFRONTEND": True,
+                            "ENABLE_PROFILE_MICROFRONTEND": True
+                        }
+                    }
+                ],
+                "EDXAPP_ACCOUNT_MICROFRONTEND_URL": "https://{}/account".format(self.instance.mfe_domain),
+                "EDXAPP_LMS_WRITABLE_GRADEBOOK_URL": "https://{}/gradebook".format(self.instance.mfe_domain),
+                "EDXAPP_PROFILE_MICROFRONTEND_URL": "https://{}/profile/u/".format(self.instance.mfe_domain),
+            })
 
         if settings.OPENEDX_ORACLEJDK_URL:
             template["oraclejdk_url"] = settings.OPENEDX_ORACLEJDK_URL
