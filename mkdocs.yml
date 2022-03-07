@@ -27,3 +27,4 @@ nav:
       - "Docker": development/docker.md
   - "Operations":
       - "Management Tasks": operations/management-tasks.md
+      - "Archival Process": operations/archival-process.md
