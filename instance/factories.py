@@ -102,7 +102,7 @@ def production_instance_factory(**kwargs) -> Union[GroveInstance, OpenEdXInstanc
     """
     Factory function for creating production instances.
 
-    Returns a newly created Instance.
+    Returns a new GroveInstance or OpenEdXInstance.
 
     Callers can use keyword arguments to pass in non-default values
     for any field that is defined on the OpenEdXInstance model.

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
-The Grove deployment model.
+The Grove repository model.
 """
 
 import logging
@@ -112,9 +112,9 @@ class GroveClusterRepository(TimeStampedModel):
 
     @property
     def gitlab_client(self):
-        username = self.username if self.username else settings.DEFAULT_GITLAB_USER
-        personal_access_token = self.personal_access_token if self.personal_access_token else settings.DEFAULT_GITLAB_PERSONAL_ACCESS_TOKEN
-        trigger_token = self.trigger_token if self.trigger_token else settings.GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN
+        username = self.username or settings.DEFAULT_GITLAB_USER
+        personal_access_token = self.personal_access_token or settings.DEFAULT_GITLAB_PERSONAL_ACCESS_TOKEN
+        trigger_token = self.trigger_token or settings.GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN
 
         return GitLabClient(
             base_url=settings.GITLAB_API_BASE_URL,
