@@ -156,7 +156,7 @@ class NotificationsViewSet(GenericViewSet):
 
         user = self.request.user
 
-        applications = BetaTestApplication.objects.select_related('instance')
+        applications = BetaTestApplication.objects.select_related('instance_type')
 
         if user.is_staff:
             applications = applications.all()
@@ -218,8 +218,9 @@ class NotificationsViewSet(GenericViewSet):
 
         application = self.get_application()
         deployments = self.get_queryset(application)
+        instance = application.instance
 
-        undeployed_changes = build_instance_config_diff(application)
+        undeployed_changes = build_instance_config_diff(application, instance)
 
         notifications = []
         for deployment in deployments:
@@ -242,7 +243,7 @@ class NotificationsViewSet(GenericViewSet):
         # we manually change its status.
         last_notification = notifications[0]
         if last_notification['status'] == DeploymentState.healthy.name:
-            undeployed_changes = build_instance_config_diff(application)
+            undeployed_changes = build_instance_config_diff(application, instance)
             if undeployed_changes:
                 last_notification['status'] = DeploymentState.changes_pending
 
@@ -577,11 +578,11 @@ class OpenEdXInstanceConfigViewSet(
         if not user.is_authenticated:
             return BetaTestApplication.objects.none()
         elif user.is_staff:
-            return BetaTestApplication.objects.all().select_related("instance")
+            return BetaTestApplication.objects.all().select_related("instance_type")
         else:
             return BetaTestApplication.objects.filter(
                 user=self.request.user
-            ).select_related("instance")
+            ).select_related("instance_type")
 
 
 class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
@@ -600,7 +601,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         For a regular user it should return a single object (for now).
         """
         user: User = self.request.user
-        queryset = BetaTestApplication.objects.select_related("instance")
+        queryset = BetaTestApplication.objects.select_related("instance_type")
 
         if not user.is_authenticated:
             return queryset.none()
@@ -733,7 +734,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         """
         application = self.get_object()
         instance = application.instance
-        undeployed_changes = build_instance_config_diff(application)
+        undeployed_changes = build_instance_config_diff(application, instance)
         deployed_changes = None
         deployment_type = None
 

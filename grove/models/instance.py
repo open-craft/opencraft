@@ -21,6 +21,7 @@ The Grove deployment model.
 
 import logging
 
+from django.contrib.contenttypes import fields
 from django.db import models
 
 from grove.models.repository import GroveClusterRepository, get_default_repository
@@ -32,6 +33,8 @@ from instance.models.mixins.openedx_static_content_overrides import OpenEdXStati
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
+
+# from registration.models import BetaTestApplication
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +67,7 @@ class GroveInstance(
 
     GroveInstance model is derived from the Instance model.
     """
+    betatestapplication = fields.GenericRelation('registration.BetaTestApplication', content_type_field='instance_type', object_id_field='instance_id')
     tags = models.ManyToManyField(
         InstanceTag,
         blank=True,

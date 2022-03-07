@@ -24,6 +24,7 @@ import re
 
 from django.core.cache import cache
 from django.conf import settings
+from django.contrib.contenttypes import fields
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.db.models import F
@@ -50,6 +51,7 @@ from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.models.utils import ConsulAgent, WrongStateException, get_base_playbook_name
 from instance.signals import appserver_spawned
 from instance.utils import sufficient_time_passed
+from registration.models import BetaTestApplication
 
 
 # Models ######################################################################
@@ -76,6 +78,7 @@ class OpenEdXInstance(
 
     # Most settings/fields are inherited from mixins
 
+    betatestapplication = fields.GenericRelation(BetaTestApplication)
     successfully_provisioned = models.BooleanField(default=False)
     database_name = models.CharField(blank=False, unique=True, max_length=60)
 
