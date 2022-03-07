@@ -20,7 +20,7 @@ GitLab client used by Grove.
 """
 
 from urllib.parse import urljoin
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 from django.conf import settings
@@ -28,7 +28,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 GitLabToken: Optional[str] = None
 
-PIPELINE_RUNNING_STATUSES = [
+PIPELINE_RUNNING_STATUSES: List[str] = [
     'created',
     'waiting_for_resource',
     'preparing',
@@ -64,9 +64,9 @@ class GitLabClient:
         response = requests.post(
             urljoin(self.base_url, f"projects/{self.project_id}/trigger/pipeline"),
             data={
+                **variables,
                 "ref": self.ref,
                 "token": self.trigger_token,
-                **variables,
             }
         )
 
@@ -91,11 +91,8 @@ class GitLabClient:
             },
         )
         response.raise_for_status()
-        pipelines = response.json()
+        pipelines: List[dict] = response.json()
 
-        for pipeline in pipelines:
-            # any pipeline that has status any of created, waiting_for_resource, preparing,
-            # pending or running will be considered as running pipeline.
-            if pipeline['status'] in PIPELINE_RUNNING_STATUSES:
-                return True
-        return False
+        # any pipeline that has status any of created, waiting_for_resource, preparing, pending
+        # or running will be considered as running pipeline.
+        return any([pipeline['status'] in PIPELINE_RUNNING_STATUSES] for pipeline in pipelines)

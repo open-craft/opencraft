@@ -246,7 +246,7 @@ def create_new_deployment(
     from registration.models import BetaTestApplication
 
     changes = None
-    if len(instance.betatestapplication.all()) > 0:
+    if instance.betatestapplication.count() > 0:
         instance_type = ContentType.objects.get_for_model(instance)
         beta_test_application = BetaTestApplication.objects.filter(instance_type=instance_type, instance_id=instance.id)
         changes = build_instance_config_diff(beta_test_application[0], instance)

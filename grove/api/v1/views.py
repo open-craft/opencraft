@@ -79,9 +79,7 @@ def is_deployment_pipeline(body):
     """
     Check if the pipeline is related to instance deployment
     """
-    if body.get('commit', '') and "deployment" in body['commit']['title']:
-        return True
-    return False
+    return body.get('commit', '') and "deployment" in body['commit']['title']
 
 
 def get_instance(body):
@@ -89,11 +87,10 @@ def get_instance(body):
     Fetch instance related to deployment pipeline
     """
     instance_name = re.findall("deployment\/(\w+)\/", body['commit']['title'])
-    if instance_name:
-        instance = InstanceReference.objects.get(name=instance_name[0])
-        return instance
-    else:
+    if not instance_name:
         return None
+
+    return InstanceReference.objects.get(name=instance_name[0])
 
 
 @require_POST

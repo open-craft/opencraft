@@ -32,5 +32,3 @@ class GroveAppConfig(AppConfig):
         """
         Connect signal handlers when the app is ready.
         """
-        # from grove.signals import trigger_gitlab_pipeline
-        # assert trigger_gitlab_pipeline

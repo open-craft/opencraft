@@ -19,7 +19,6 @@
 The Gitlab pipeline model.
 """
 
-from tkinter import OFF
 from typing import Dict, Any, Optional
 
 from django_extensions.db.models import TimeStampedModel
@@ -80,5 +79,5 @@ class GitlabPipeline(TimeStampedModel):
             return DeploymentState.provisioning
         elif self.status in [self.FAILED, self.SKIPPED, self.CANCELLED]:
             return DeploymentState.unhealthy
-        else:
-            return DeploymentState.offline
+
+        return DeploymentState.offline

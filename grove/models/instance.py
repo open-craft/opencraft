@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
-The Grove deployment model.
+The Grove instance model.
 """
 
 import logging
@@ -33,8 +33,6 @@ from instance.models.mixins.openedx_static_content_overrides import OpenEdXStati
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
-
-# from registration.models import BetaTestApplication
 
 logger = logging.getLogger(__name__)
 

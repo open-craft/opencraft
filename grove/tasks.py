@@ -18,6 +18,7 @@
 """
 Background tasks for by the Grove app.
 """
+
 import logging
 from huey import crontab
 from huey.contrib.djhuey import db_periodic_task
