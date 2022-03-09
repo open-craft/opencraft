@@ -9,7 +9,7 @@ system. Also, remember to use **Python 3.5.x** or **Python 3.6.x**(use `pyenv`) 
 vagrant environment as the playbooks only support them for now, and 
 **do not work** on Python 3.7 or higher.
 
-Also you can docker for development and the steps are mentioned [here|https://ocim.opencraft.com/en/latest/development/docker/]
+Also you can use the docker setup for development. Follow the steps mentioned [here|https://ocim.opencraft.com/en/latest/development/docker/]
 
 Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
 virtual machines with the developer environment set up. To provision and
