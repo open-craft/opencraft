@@ -2,8 +2,6 @@
 
 This describes how to create an environment for development using Docker.
 
-**This is still experimental, using [Vagrant](../installation.md) is much better tested and supported!**
-
 ## Running OCIM in a docker container
 
 First, set your `.env` file as you would normally, but first set the following vars:
