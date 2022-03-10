@@ -95,4 +95,4 @@ class GitLabClient:
 
         # any pipeline that has status any of created, waiting_for_resource, preparing, pending
         # or running will be considered as running pipeline.
-        return any([pipeline['status'] in PIPELINE_RUNNING_STATUSES] for pipeline in pipelines)
+        return any([pipeline['status'] in PIPELINE_RUNNING_STATUSES for pipeline in pipelines])

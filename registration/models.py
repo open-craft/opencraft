@@ -402,16 +402,10 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         default=PENDING,
     )
     # Using GenericForeignKey to support both GroveInstance as well as OpenEdxInstance types
+    # Below three lines would eventually be replaced by only GroveInstance
     instance_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
     instance_id = models.PositiveIntegerField(null=True, blank=True)
     instance = fields.GenericForeignKey('instance_type', 'instance_id')
-    # Above three lines would eventually be replaced by only GroveInstance:
-    #   instance = models.ForeignKey(
-    #       GroveInstance,
-    #       on_delete=models.SET_NULL,
-    #       null=True,
-    #       blank=True,
-    #   )
     use_advanced_theme = models.BooleanField(
         default=False,
         help_text=('The advanced theme allows users to pick a lot more details than the regular theme.'

@@ -44,7 +44,7 @@ from registration.api.v2.views import (
 
 v1_router = routers.DefaultRouter()
 
-v1_router.register(r'grove/deployments', GroveDeploymentAPIView,
+v1_router.register(r'grove/deployments', GroveDeploymentAPIView, basename='grove-deployments')
 v1_router.register(r'status', StatusViewSet, basename='status')
 v1_router.register(r'deployment_type', DeploymentTypeViewSet, basename='deployment_type')
 v1_router.register(r'instance', InstanceViewSet, basename='instance')
