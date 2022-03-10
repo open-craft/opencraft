@@ -23,8 +23,6 @@ from typing import Dict, Any, Optional
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from ruamel import yaml
-from django.db import transaction
 
 from grove.models.gitlabpipeline import GitlabPipeline
 from instance.models.deployment import Deployment

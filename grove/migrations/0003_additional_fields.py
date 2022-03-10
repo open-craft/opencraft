@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('grove', '0002_auto_20211203_1131'),
+        ('grove', '0002_add_storage_fields'),
     ]
 
     operations = [

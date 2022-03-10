@@ -19,14 +19,9 @@
 The Gitlab pipeline model.
 """
 
-from typing import Dict, Any, Optional
-
 from django_extensions.db.models import TimeStampedModel
 
-from django.contrib.postgres.fields import JSONField
 from django.db import models
-from ruamel import yaml
-from django.db import transaction
 
 from instance.models.instance import InstanceReference
 from instance.models.openedx_deployment import DeploymentState

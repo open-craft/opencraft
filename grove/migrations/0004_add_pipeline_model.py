@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('instance', '0144_make_redis_username_unique'),
-        ('grove', '0003_auto_20220116_1041'),
+        ('grove', '0003_additional_fields'),
     ]
 
     operations = [
