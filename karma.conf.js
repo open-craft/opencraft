@@ -27,7 +27,6 @@ module.exports = function(config) {
       'static/external/js/restangular.min.js',
       'static/external/js/angular-mocks.js',
       'static/external/js/jshint.js',
-      'static/external/js/django-angular.min.js',
       'static/external/js/icheck.min.js',
       'instance/static/js/src/**/*.js',
       'registration/static/js/src/**/*.js',
