@@ -1,3 +1,4 @@
+
 [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
     display: none !important;
 }
@@ -8,18 +9,18 @@ form .ng-invalid.ng-dirty {
     border-color: #e9322d;
 }
 
-ul.djng-form-errors, ul.djng-field-errors {
+ul.login-form-errors, ul.login-field-errors {
     display: inline-block;
     list-style-type: none;
     margin: 5px 0 0 0;
     padding: 0;
 }
 
-ul.djng-form-errors li, ul.djng-field-errors li {
+ul.login-form-errors li, ul.login-field-errors li {
     color: #e9322d;
 }
 
-ul.djng-field-errors {
+ul.login-field-errors {
     li::before {
         position: absolute;
         top: 2.8rem;
@@ -27,15 +28,11 @@ ul.djng-field-errors {
         line-height: 2rem;
     }
 
-    li.valid::before {
-        content: url('/static/img/svg/forms/opencraft_valid.svg');
-    }
-
     li.invalid::before {
         content: url('/static/img/svg/forms/opencraft_error.svg');
     }
 }
 
-.checkbox__wrapper__text ul.djng-field-errors li::before {
+.checkbox__wrapper__text ul.login-field-errors li::before {
     top: 0.35rem;
 }

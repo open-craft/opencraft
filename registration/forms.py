@@ -26,7 +26,6 @@ import logging
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin
 
 
 # Logging #####################################################################
@@ -77,6 +76,7 @@ class PasswordInput(InputStyleMixin, forms.widgets.PasswordInput):
     """
 
 
+
 class Textarea(InputStyleMixin, forms.widgets.Textarea):
     """
     Adds styles to textareas.
@@ -86,7 +86,7 @@ class Textarea(InputStyleMixin, forms.widgets.Textarea):
 
 # Forms #######################################################################
 
-class LoginForm(NgFormValidationMixin, AuthenticationForm, metaclass=NgDeclarativeFieldsMetaclass):
+class LoginForm(AuthenticationForm):
     """
     Allows users to login with username/email and password.
     """
@@ -94,6 +94,7 @@ class LoginForm(NgFormValidationMixin, AuthenticationForm, metaclass=NgDeclarati
         label='Your email or username',
         help_text='You can enter either your username or your email to login.',
         widget=TextInput,
+        max_length=150
     )
     password = forms.CharField(
         help_text=('If you have forgotten your login details or need to reset '

@@ -4,9 +4,9 @@
 
     {% if form.non_field_errors %}
         <div class="page-content__inner__wrapper">
-            <ul class="djng-form-errors">
+            <ul class="login-form-errors">
                 {% for error in form.non_field_errors %}
-                    <li class="invalid">{{ error|last }}</li>
+                    <li class="invalid">{{ error }}</li>
                 {% endfor %}
             </ul>
         </div>

@@ -19,6 +19,6 @@
 
 // App configuration //////////////////////////////////////////////////////////
 
-var app = angular.module('LoginApp', ['djng.forms']);
+var app = angular.module('LoginApp', []);
 
 })();
