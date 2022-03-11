@@ -76,7 +76,6 @@ class PasswordInput(InputStyleMixin, forms.widgets.PasswordInput):
     """
 
 
-
 class Textarea(InputStyleMixin, forms.widgets.Textarea):
     """
     Adds styles to textareas.
