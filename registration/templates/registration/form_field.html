@@ -8,13 +8,13 @@
             <div class="input--host__wrapper input--host__wrapper--{{ field.name }}">
                 {{ field }}
             </div>
-            <div class="login-field-errors__inner__wrapper">
-                <ul class="login-field-errors">
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <li class="invalid">{{ error }}</li>
-                            {% endfor %}
-                        {% endif %}
+            <div class="ocim-field-errors__inner__wrapper">
+                <ul class="ocim-field-errors">
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <li class="invalid">{{ error }}</li>
+                        {% endfor %}
+                    {% endif %}
                 </ul>
             </div>
         </div>

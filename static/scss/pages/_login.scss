@@ -8,18 +8,18 @@ form .ng-invalid.ng-dirty {
     border-color: #e9322d;
 }
 
-ul.login-form-errors, ul.login-field-errors {
+ul.ocim-form-errors, ul.ocim-field-errors {
     display: inline-block;
     list-style-type: none;
     margin: 5px 0 0 0;
     padding: 0;
 }
 
-ul.login-form-errors li, ul.login-field-errors li {
+ul.ocim-form-errors li, ul.ocim-field-errors li {
     color: #e9322d;
 }
 
-ul.login-field-errors {
+ul.ocim-field-errors {
     li::before {
         position: absolute;
         top: 2.8rem;
@@ -32,6 +32,6 @@ ul.login-field-errors {
     }
 }
 
-.checkbox__wrapper__text ul.login-field-errors li::before {
+.checkbox__wrapper__text ul.ocim-field-errors li::before {
     top: 0.35rem;
 }
