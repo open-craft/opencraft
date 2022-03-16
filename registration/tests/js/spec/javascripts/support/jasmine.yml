@@ -15,7 +15,6 @@ src_files:
   - static/external/js/jquery.min.js
   - static/external/js/underscore-min.js
   - static/external/js/angular.min.js
-  - static/external/js/django-angular.min.js
   - static/external/js/icheck.min.js
   - static/external/js/angular-mocks.js
   - registration/static/js/src/*.js
