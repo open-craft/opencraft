@@ -19,51 +19,12 @@
 Registry for feature toggles used by the Console Backend (Ocim).
 """
 
-from urllib.parse import urljoin
-
 from django.conf import settings
-from UnleashClient import UnleashClient
 
 SWITCH_GROVE_DEPLOYMENTS: str = "enable_grove_deployments"
 
-# In-memory "cache" for the initialized clients
-__clients__ = dict()
-
-
-def get_unleash_client(url: str, project_id: int, instance_id: str, app_name: str) -> UnleashClient:
-    cache_key = f"{project_id}-{instance_id}-{app_name}"
-
-    initialized_client = __clients__.get(cache_key, None)
-    if initialized_client is not None:
-        return initialized_client
-
-    client = UnleashClient(
-        url=url,
-        instance_id=instance_id,
-        app_name=app_name,
-        custom_headers={
-            'Authorization': settings.GITLAB_API_TOKEN
-        }
-    )
-
-    client.initialize_client()
-
-    __clients__[cache_key] = client
-    return client
-
-
-def is_feature_enabled(base_url: str, project_id: int, instance_id: str, feature: str, **kwargs) -> bool:
+def use_grove_deployment() -> bool:
     """
-    Get the status of the given feature switch in the current environment.
-
-    The results are intentionally not cached.
+    Check if grove deployments should be used
     """
-
-    client = get_unleash_client(
-        url=urljoin(base_url, f"feature_flags/unleash/{project_id}"),
-        project_id=project_id,
-        instance_id=instance_id,
-        app_name=settings.GROVE_ENVIRONMENT,
-    )
-
-    return client.is_enabled(feature, **kwargs)
+    return settings.USE_GROVE_INSTANCE

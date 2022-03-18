@@ -239,7 +239,7 @@ def create_new_deployment(
     from django.contrib.contenttypes.models import ContentType
     from grove.models.deployment import GroveDeployment
     from grove.models.instance import GroveInstance
-    from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
+    from grove.switchboard import use_grove_deployment
     from instance.models.deployment import DeploymentType
     from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
     from instance.tasks import start_deployment
@@ -256,8 +256,6 @@ def create_new_deployment(
 
     # Check if the instance is managed by Grove
     if isinstance(instance, GroveInstance):
-        project_id = instance.repository.project_id
-        instance_id = instance.repository.unleash_instance_id
         # If the deployments are not enabled do not create a new deployment request. If the
         # instance has a repository configured that means it was deployed at least once by
         # Grove, hence OpenEdXInstance does not exist and creating an OpenEdXDeployment will
@@ -266,8 +264,7 @@ def create_new_deployment(
         # created for them. The reason this deployment behavior is controlled by a feature switch
         # is that we may need to roll back ASAP during the manual QA on production. Later, this
         # setting should be cleaned up as part of a cleanup task when Grove is deployed 100%.
-        gitlab_client = instance.repository.gitlab_client
-        if not is_feature_enabled(gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
+        if not use_grove_deployment():
             return
 
         GroveDeployment.objects.create(

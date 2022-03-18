@@ -1011,6 +1011,7 @@ PRODUCTION_INSTANCE_EXTRA_CONFIGURATION = env.json('PRODUCTION_INSTANCE_EXTRA_CO
 
 # Grove #######################################################################
 
+USE_GROVE_INSTANCE = env.str('USE_GROVE_INSTANCE', default=False)
 GITLAB_API_BASE_URL = env.str('GITLAB_API_BASE_URL', default='https://gitlab.com/api/v4/')
 GITLAB_API_TOKEN = env.str('GITLAB_API_TOKEN', default='')
 
