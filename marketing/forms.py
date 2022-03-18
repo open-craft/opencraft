@@ -22,11 +22,9 @@ Forms for the `marketing` app
 from decimal import Decimal
 
 from django.contrib.postgres.forms.jsonb import JSONField
-from django.db import ProgrammingError
 from django.forms import DecimalField, Form, ModelChoiceField, ValidationError
 from grove.models.instance import GroveInstance
-from grove.models.repository import get_default_repository
-from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
+from grove.switchboard import use_grove_deployment
 from instance.models.openedx_instance import OpenEdXInstance
 
 
@@ -47,11 +45,7 @@ class ConversionForm(Form):
     """
     Form to handle and validate the conversion data to be sent to Matomo.
     """
-    try:
-        repository = get_default_repository()
-    except ProgrammingError as e:
-        repository = None
-    if repository and is_feature_enabled(repository.gitlab_client.base_url, repository.project_id, repository.unleash_instance_id, SWITCH_GROVE_DEPLOYMENTS):
+    if use_grove_deployment():
         instance_queryset=GroveInstance.objects.filter(
             betatestapplication__isnull=False,
             ref_set__is_archived=False,

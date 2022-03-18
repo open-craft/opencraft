@@ -30,10 +30,8 @@ from django.conf import settings
 
 from grove.models.instance import GroveInstance
 from grove.models.repository import get_default_repository
-from grove.switchboard import SWITCH_GROVE_DEPLOYMENTS, is_feature_enabled
+from grove.switchboard import use_grove_deployment
 from instance import ansible
-from instance.models.database_server import MySQLServer, MongoDBServer
-from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
 from grove.models.repository import get_default_repository
 
@@ -153,11 +151,9 @@ def production_instance_factory(**kwargs) -> Union[GroveInstance, OpenEdXInstanc
     )
 
     repository = get_default_repository()
-    project_id = repository.project_id
-    instance_id = repository.unleash_instance_id
     instance_kwargs.update(kwargs)
 
-    if is_feature_enabled(repository.gitlab_client.base_url, project_id, instance_id, SWITCH_GROVE_DEPLOYMENTS):
+    if use_grove_deployment():
         instance_kwargs.update({"repository": repository})
 
         # Create Grove instance
