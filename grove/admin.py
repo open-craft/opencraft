@@ -23,8 +23,15 @@ from django.contrib import admin
 
 from grove.models.deployment import GroveDeployment
 from grove.models.instance import GroveInstance
+from grove.models.gitlabpipeline import GitlabPipeline
 from grove.models.repository import GroveClusterRepository
 from instance.admin import InlineInstanceReferenceAdmin
+
+
+class GitlabPipelineAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
+   list_display = ("pipeline_id", "instance", "status")
+   list_filter = ("status")
+   search_fields = ("instance__name",)
 
 
 class GroveClusterRepositoryAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
@@ -62,6 +69,7 @@ class GroveInstanceAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
         return super().get_inline_instances(request, obj)
 
 
+admin.site.register(GitlabPipeline, GitlabPipelineAdmin)
 admin.site.register(GroveClusterRepository, GroveClusterRepositoryAdmin)
 admin.site.register(GroveDeployment, GroveDeploymentAdmin)
 admin.site.register(GroveInstance, GroveInstanceAdmin)
