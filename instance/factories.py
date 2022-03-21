@@ -36,7 +36,6 @@ from instance import ansible
 from instance.models.openedx_instance import OpenEdXInstance
 
 
-
 # Logging #####################################################################
 
 logger = logging.getLogger(__name__)

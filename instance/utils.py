@@ -41,9 +41,6 @@ import requests
 from asgiref.sync import async_to_sync
 from dictdiffer import diff
 
-if TYPE_CHECKING:
-    from registration.models import BetaTestApplication  # pylint: disable=cyclic-import, useless-suppression
-
 
 # Logging #####################################################################
 
@@ -171,9 +168,11 @@ def publish_data(data):
     async_to_sync(channel_layer.group_send)('ws', {'type': 'notification', 'message': data})
 
 
-def build_instance_config_diff(instance_config: 'BetaTestApplication', instance=None):
+def build_instance_config_diff(instance_config, instance=None):
     """
     Builds an configuration diff for the provided instance configuration.
+
+    :type instance_config: BetaTestApplication
     """
     instance = instance
     if not instance:
@@ -244,7 +243,7 @@ def create_new_deployment(
     from instance.models.deployment import DeploymentType
     from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
     from instance.tasks import start_deployment
-    from registration.models import BetaTestApplication  # pylint: disable=redefined-outer-name
+    from registration.models import BetaTestApplication
 
     changes = None
     if instance.betatestapplication.count() > 0:

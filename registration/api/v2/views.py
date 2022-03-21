@@ -740,6 +740,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         """
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+    # pylint: disable=too-many-branches
     def retrieve(self, request, *args, **kwargs):
         """
         Retrieves the deployment status for a given betatest instance.
@@ -753,8 +754,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         deployed_changes = None
         deployment_type = None
 
-        if (not instance or
-                not instance.get_latest_deployment()):
+        if (not instance or not instance.get_latest_deployment()):
             if isinstance(instance, GroveInstance):
                 deployment_status = DeploymentState.preparing
             elif not instance.successfully_provisioned:
@@ -766,8 +766,10 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
                 deployment_status = deployment.check_status()
             else:
                 deployment_status = deployment.status()
+
             if deployment_status == DeploymentState.healthy and undeployed_changes:
                 deployment_status = DeploymentState.changes_pending
+
             deployment_type = deployment.type
             if isinstance(deployment, OpenEdXDeployment):
                 deployed_changes = deployment.changes
