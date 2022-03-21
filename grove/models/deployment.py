@@ -55,6 +55,9 @@ class GroveDeployment(Deployment):
 
 
     def build_trigger_payload(self) -> Dict[str, Any]:
+        """
+        Assemble the payload for the GitLab pipeline to trigger a new deployment.
+        """
         instance = self.instance.instance
         payload = {
             "variables[INSTANCE_NAME]": instance.name,
@@ -72,6 +75,9 @@ class GroveDeployment(Deployment):
         return payload
 
     def build_abort_pipeline_trigger_payload(self, pipeline_id) -> Dict[str, Any]:
+        """
+        Assemble the deployment pipeline cancellation payload.
+        """
         return {
             "variables[ABORT_DEPLOYMENT_TRIGGER]": True,
             "variables[PIPELINE_ID]": pipeline_id,

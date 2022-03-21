@@ -23,6 +23,7 @@ from django.conf import settings
 
 SWITCH_GROVE_DEPLOYMENTS: str = "enable_grove_deployments"
 
+
 def use_grove_deployment() -> bool:
     """
     Check if grove deployments should be used

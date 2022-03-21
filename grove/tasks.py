@@ -44,15 +44,15 @@ def trigger_grove_deployment():
     logger.info('There are %s pending deployments!', len(pending_deployments))
 
     for deployment in pending_deployments:
-
-        if deployment.type == DeploymentType.registration.name and deployment.instance.instance.repository.gitlab_client.is_there_any_pipeline_running():
+        has_running_pipeline = deployment.instance.instance.repository.gitlab_client.is_there_any_pipeline_running()
+        if deployment.type == DeploymentType.registration.name and has_running_pipeline:
             # this is a new deployment via registration and there is other
             # pipelines running, so we can't deploy now. We could use `continue`
             # here, but that might create a long delay before starting deployments.
             #
             # so, instead we will not trigger any deployments and wait for existing
             # one's to finish, so that we can deploy this new instance.
-            logger.info("Cannot trigger deployment as there are existing ones running. Need to wait for them to finish.")
+            logger.info("Cannot trigger deployment as there are existing ones running, wait for them to finish.")
             break
 
         logger.info('Triggering deployment for %s!', len(deployment.instance.name))

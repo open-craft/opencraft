@@ -29,9 +29,9 @@ from instance.admin import InlineInstanceReferenceAdmin
 
 
 class GitlabPipelineAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
-   list_display = ("pipeline_id", "instance", "status")
-   list_filter = ("status")
-   search_fields = ("instance__name",)
+    list_display = ("pipeline_id", "instance", "status")
+    list_filter = ("status")
+    search_fields = ("instance__name",)
 
 
 class GroveClusterRepositoryAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring

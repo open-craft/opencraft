@@ -46,14 +46,14 @@ class ConversionForm(Form):
     Form to handle and validate the conversion data to be sent to Matomo.
     """
     if use_grove_deployment():
-        instance_queryset=GroveInstance.objects.filter(
+        instance_queryset = GroveInstance.objects.filter(
             betatestapplication__isnull=False,
             ref_set__is_archived=False,
             successfully_provisioned=True
         )
     else:
         # Use OpenEdxInstance as default
-        instance_queryset=OpenEdXInstance.objects.filter(
+        instance_queryset = OpenEdXInstance.objects.filter(
             betatestapplication__isnull=False,
             ref_set__is_archived=False,
             successfully_provisioned=True

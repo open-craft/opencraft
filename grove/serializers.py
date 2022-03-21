@@ -32,4 +32,3 @@ class GroveDeploymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroveDeployment
         fields = "__all__"
-

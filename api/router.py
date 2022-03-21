@@ -28,9 +28,7 @@ from email_verification.api.v2.views import VerifyEmailViewset
 from grove.api.v1.views import GroveDeploymentAPIView
 from instance.api.appserver import StatusViewSet
 from instance.api.deployment import DeploymentTypeViewSet
-from instance.api.instance import InstanceViewSet
 from instance.api.instance import InstanceViewSet, InstanceTagViewSet
-from instance.api.openedx_appserver import OpenEdXAppServerViewSet
 from instance.api.openedx_appserver import OpenEdXAppServerViewSet, OpenEdXReleaseViewSet
 from instance.api.server import OpenStackServerViewSet
 

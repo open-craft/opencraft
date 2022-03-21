@@ -38,14 +38,14 @@ logger = logging.getLogger(__name__)
 
 
 class GroveInstance(
-    DomainNameInstance,
-    OpenEdXAppConfiguration,
-    OpenEdXMonitoringMixin,
-    OpenEdXSiteConfigurationMixin,
-    OpenEdXStaticContentOverridesMixin,
-    OpenEdXStorageMixin,
-    OpenEdXThemeMixin,
-    Instance,
+        DomainNameInstance,
+        OpenEdXAppConfiguration,
+        OpenEdXMonitoringMixin,
+        OpenEdXSiteConfigurationMixin,
+        OpenEdXStaticContentOverridesMixin,
+        OpenEdXStorageMixin,
+        OpenEdXThemeMixin,
+        Instance
 ):
     """
     GroveInstance contains the mandatory field values for an instance.

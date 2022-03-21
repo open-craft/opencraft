@@ -41,12 +41,7 @@ from opencraft.swagger import viewset_swagger_helper
     create="Trigger new deployment in Grove for an existing instance",
     public_actions=["create"],
 )
-class GroveDeploymentAPIView(
-    RetrieveModelMixin,
-    ListModelMixin,
-    CreateModelMixin,
-    GenericViewSet
-):
+class GroveDeploymentAPIView(RetrieveModelMixin, ListModelMixin, CreateModelMixin, GenericViewSet):
     """
     GroveDeploymentAPI is used to create new and monitor existing deployments.
 
@@ -86,7 +81,7 @@ def get_instance(body):
     """
     Fetch instance related to deployment pipeline
     """
-    instance_name = re.findall("deployment\/(\w+)\/", body['commit']['title'])
+    instance_name = re.findall(r"deployment\/(\w+)\/", body['commit']['title'])
     if not instance_name:
         return None
 

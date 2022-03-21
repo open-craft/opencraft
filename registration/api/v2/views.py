@@ -32,9 +32,6 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 
-from grove.models.instance import GroveInstance
-from grove.models.deployment import GroveDeployment
-
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, ValidationError
@@ -49,6 +46,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
+
+from grove.models.instance import GroveInstance
+from grove.models.deployment import GroveDeployment
 
 from instance.models.deployment import DeploymentType
 from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
@@ -673,6 +673,48 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
+    def _commit_pre_flight_instance(self, instance, instance_config):
+        """
+        Pre-flight checks of the instance before committing.
+        """
+        if instance is None:
+            # For a new user an instance will not exist until they've verified their email.
+            raise ValidationError(
+                "Must verify email before launching an instance", code="email-unverified",
+            )
+
+        if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
+            raise ValidationError(
+                "Updated public email needs to be confirmed.", code="email-unverified"
+            )
+
+        if not instance.successfully_provisioned:
+            raise ValidationError(
+                'You must wait for a successful deployment before attempting another one.',
+                code='no-successful-deployment',
+            )
+
+    def _commit_pre_flight_deployment(self, instance, deployment, cancel_pending_deployments, force):
+        """
+        Pre-flight checks of the instance before committing.
+        """
+        if not isinstance(instance, GroveInstance):
+            if not cancel_pending_deployments and not force and instance.get_provisioning_appservers().exists():
+                raise ValidationError("Instance launch already in progress", code="in-progress")
+
+        if not deployment:
+            return
+
+        if isinstance(deployment, GroveDeployment):
+            deployment_status = deployment.check_status()
+        else:
+            deployment_status = deployment.status()
+
+        if deployment_status == DeploymentState.preparing:
+            raise ValidationError(
+                'You must wait for your initial instance to finish building.', code='first-build-incomplete',
+            )
+
     def commit_pre_flight(self, serializer, cancel_pending_deployments, force):
         """
         Completes several pre-flight sanity checks and then returns an instance configuration for commit.
@@ -685,37 +727,10 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
             )
 
         instance = instance_config.instance
-        if instance is None:
-            # For a new user an instance will not exist until they've verified their email.
-            raise ValidationError(
-                "Must verify email before launching an instance", code="email-unverified",
-            )
+        self._commit_pre_flight_instance(instance, instance_config)
 
         deployment = instance.get_latest_deployment()
-        if deployment:
-            if isinstance(deployment, GroveDeployment):
-                deployment_status = deployment.check_status()
-            else:
-                deployment_status = deployment.status()
-            if deployment_status == DeploymentState.preparing:
-                raise ValidationError(
-                    'You must wait for your initial instance to finish building.', code='first-build-incomplete',
-                )
-
-        if not isinstance(instance, GroveInstance):
-            if not cancel_pending_deployments and not force and instance.get_provisioning_appservers().exists():
-                raise ValidationError("Instance launch already in progress", code="in-progress")
-
-        if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
-            raise ValidationError(
-                "Updated public email needs to be confirmed.", code="email-unverified"
-            )
-
-        if not instance.successfully_provisioned:
-            raise ValidationError(
-                'You must wait for a successful deployment before attempting another one.',
-                code='no-successful-deployment',
-            )
+        self._commit_pre_flight_deployment(instance, deployment, cancel_pending_deployments, force)
 
         return instance_config
 

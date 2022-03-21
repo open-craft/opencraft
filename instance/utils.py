@@ -224,6 +224,7 @@ class DjangoChoiceEnum(Enum):
         return list(prop.name for prop in cls)
 
 
+# pylint: disable=too-many-locals
 def create_new_deployment(
         instance,
         creator=None,
@@ -243,7 +244,7 @@ def create_new_deployment(
     from instance.models.deployment import DeploymentType
     from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
     from instance.tasks import start_deployment
-    from registration.models import BetaTestApplication
+    from registration.models import BetaTestApplication  # pylint: disable=redefined-outer-name
 
     changes = None
     if instance.betatestapplication.count() > 0:
