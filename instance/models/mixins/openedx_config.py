@@ -153,6 +153,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
             # Nginx
             "NGINX_SET_X_FORWARDED_HEADERS": False,
+            "NGINX_PROXY_ORIGIN_REGEX": r'^(http|https)://.*\.{}'.format(self.instance.domain),
 
             # SSL is handled on the load balancer, and the appservers are HTTP only.
             "NGINX_ENABLE_SSL": False,
