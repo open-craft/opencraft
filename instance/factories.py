@@ -34,10 +34,6 @@ from grove.models.repository import get_default_repository
 from grove.switchboard import use_grove_deployment
 from instance import ansible
 from instance.models.openedx_instance import OpenEdXInstance
-from grove.models.repository import get_default_repository
-
-from typing import Union
-
 
 # Logging #####################################################################
 

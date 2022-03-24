@@ -740,8 +740,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         """
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    # pylint: disable=too-many-branches
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):  # pylint: disable=too-many-branches
         """
         Retrieves the deployment status for a given betatest instance.
 

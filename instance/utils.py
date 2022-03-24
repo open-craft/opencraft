@@ -32,7 +32,6 @@ import time
 from enum import Enum
 from contextlib import contextmanager
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import channels.layers
