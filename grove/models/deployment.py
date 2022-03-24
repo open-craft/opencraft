@@ -23,6 +23,7 @@ from typing import Dict, Any, Optional
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.utils.text import slugify
 
 from grove.models.gitlabpipeline import GitlabPipeline
 from instance.models.deployment import Deployment
@@ -60,7 +61,7 @@ class GroveDeployment(Deployment):
         """
         instance = self.instance.instance
         payload = {
-            "variables[INSTANCE_NAME]": instance.name,
+            "variables[INSTANCE_NAME]": slugify(instance.name),
             "variables[DEPLOYMENT_REQUEST_ID]": self.pk,
             "variables[NEW_INSTANCE_TRIGGER]": True,
 

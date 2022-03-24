@@ -22,6 +22,7 @@ The Grove app's API serializer.
 from rest_framework import serializers
 
 from grove.models.deployment import GroveDeployment
+from grove.models.instance import GroveInstance
 
 
 class GroveDeploymentSerializer(serializers.ModelSerializer):
@@ -31,4 +32,13 @@ class GroveDeploymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GroveDeployment
+        fields = "__all__"
+
+
+class GroveInstanceSerializer(serializers.ModelSerializer):
+    """
+    Model serializer for Grove instances.
+    """
+    class Meta:
+        model = GroveInstance
         fields = "__all__"
