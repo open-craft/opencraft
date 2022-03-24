@@ -1,14 +1,22 @@
 {% load staticfiles %}
 <div class="page-content__inner__wrapper">
     <div class="page-content__inner__left">
-        <div class="field field--host">
+        <div class="field field--host login-form-field">
             <label class="field-label {% if field.field.required %}field-label--required{% endif %}" for="{{ field.id_for_label }}">
                 {{ field.label }}
             </label>
             <div class="input--host__wrapper input--host__wrapper--{{ field.name }}">
                 {{ field }}
             </div>
-            {{ field.errors }}
+            <div class="ocim-field-errors__inner__wrapper">
+                <ul class="ocim-field-errors">
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <li class="invalid">{{ error }}</li>
+                        {% endfor %}
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </div>
     <div class="page-content__inner__right">

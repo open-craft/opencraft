@@ -41,7 +41,7 @@ def get_default_repository() -> "GroveClusterRepository":
     repository, _ = GroveClusterRepository.objects.get_or_create(
         name=settings.GROVE_DEFAULT_REPOSITORY_NAME,
         project_id=settings.GROVE_DEFAULT_REPOSITORY_PROJECT_ID,
-        defaults = {
+        defaults={
             'unleash_instance_id': settings.GROVE_DEFAULT_REPOSITORY_UNLEASH_INSTANCE_ID,
             'git_ref': settings.GROVE_DEFAULT_REPOSITORY_GIT_REF,
         }
@@ -112,6 +112,9 @@ class GroveClusterRepository(TimeStampedModel):
 
     @property
     def gitlab_client(self):
+        """
+        Return the GitLab client configured for the given repository.
+        """
         username = self.username or settings.DEFAULT_GITLAB_USER
         personal_access_token = self.personal_access_token or settings.DEFAULT_GITLAB_PERSONAL_ACCESS_TOKEN
         trigger_token = self.trigger_token or settings.GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN

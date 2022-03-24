@@ -38,14 +38,14 @@ logger = logging.getLogger(__name__)
 
 
 class GroveInstance(
-    DomainNameInstance,
-    OpenEdXAppConfiguration,
-    OpenEdXMonitoringMixin,
-    OpenEdXSiteConfigurationMixin,
-    OpenEdXStaticContentOverridesMixin,
-    OpenEdXStorageMixin,
-    OpenEdXThemeMixin,
-    Instance,
+        DomainNameInstance,
+        OpenEdXAppConfiguration,
+        OpenEdXMonitoringMixin,
+        OpenEdXSiteConfigurationMixin,
+        OpenEdXStaticContentOverridesMixin,
+        OpenEdXStorageMixin,
+        OpenEdXThemeMixin,
+        Instance
 ):
     """
     GroveInstance contains the mandatory field values for an instance.
@@ -65,7 +65,11 @@ class GroveInstance(
 
     GroveInstance model is derived from the Instance model.
     """
-    betatestapplication = fields.GenericRelation('registration.BetaTestApplication', content_type_field='instance_type', object_id_field='instance_id')
+    betatestapplication = fields.GenericRelation(
+        'registration.BetaTestApplication',
+        content_type_field='instance_type',
+        object_id_field='instance_id',
+    )
     tags = models.ManyToManyField(
         InstanceTag,
         blank=True,

@@ -23,7 +23,6 @@ from urllib.parse import urljoin
 from typing import Any, Dict, List, Optional
 
 import requests
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 GitLabToken: Optional[str] = None
@@ -42,7 +41,15 @@ class GitLabClient:
     A client to call basic operations on GitLab.
     """
 
-    def __init__(self, base_url: str, project_id: int, ref: str, username: str, personal_access_token: str, trigger_token: str):
+    def __init__(
+            self,
+            base_url: str,
+            project_id: int,
+            ref: str,
+            username: str,
+            personal_access_token: str,
+            trigger_token: str,
+    ):
         self.base_url = base_url
         self.username = username
         self.personal_access_token = personal_access_token
@@ -83,7 +90,7 @@ class GitLabClient:
 
         response = requests.get(
             urljoin(self.base_url, f"projects/{self.project_id}/pipelines"),
-            params = {
+            params={
                 'ref': self.ref
             },
             headers={

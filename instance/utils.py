@@ -41,9 +41,6 @@ import requests
 from asgiref.sync import async_to_sync
 from dictdiffer import diff
 
-if TYPE_CHECKING:
-    from registration.models import BetaTestApplication  # pylint: disable=cyclic-import, useless-suppression
-
 
 # Logging #####################################################################
 
@@ -171,9 +168,11 @@ def publish_data(data):
     async_to_sync(channel_layer.group_send)('ws', {'type': 'notification', 'message': data})
 
 
-def build_instance_config_diff(instance_config: 'BetaTestApplication', instance=None):
+def build_instance_config_diff(instance_config, instance=None):
     """
     Builds an configuration diff for the provided instance configuration.
+
+    :type instance_config: BetaTestApplication
     """
     instance = instance
     if not instance:
@@ -224,6 +223,7 @@ class DjangoChoiceEnum(Enum):
         return list(prop.name for prop in cls)
 
 
+# pylint: disable=too-many-locals
 def create_new_deployment(
         instance,
         creator=None,

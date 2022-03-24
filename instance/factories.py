@@ -24,6 +24,7 @@ Instance app - Factory functions for creating instances
 
 import logging
 import re
+from typing import Union
 import yaml
 
 from django.conf import settings

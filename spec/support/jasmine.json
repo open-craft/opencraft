@@ -17,7 +17,6 @@
     "static/external/js/restangular.min.js",
     "static/external/js/angular-mocks.js",
     "static/external/js/jshint.js",
-    "static/external/js/django-angular.min.js",
     "static/external/js/icheck.min.js",
     "static/external/js/angular-sanitize.min.js",
     "static/external/js/marked.min.js",

@@ -57,15 +57,22 @@ class GitlabPipeline(TimeStampedModel):
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=CREATED)
 
     def update_status(self, new_status=None):
+        """
+        Update pipeline status if new status is known.
+        """
         updated_status = 0
-        for (i,v) in self.STATUS_CHOICES:
+        for k, v in self.STATUS_CHOICES:
             if new_status == v:
-                updated_status = i
+                updated_status = k
+
         if self.status != updated_status:
             self.status = updated_status
             self.save()
 
     def get_deployment_status(self):
+        """
+        Retrieve the deployment status.
+        """
         if self.status == self.SUCCESS:
             self.instance.instance.successfully_provisioned = True
             self.instance.instance.save()

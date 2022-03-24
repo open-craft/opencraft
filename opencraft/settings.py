@@ -139,7 +139,6 @@ INSTALLED_APPS = (
     'django_extensions',
     'foundation',
     'compressor',
-    'djng',
     'rest_framework',
     'django_rest_passwordreset',
     'huey.contrib.djhuey',

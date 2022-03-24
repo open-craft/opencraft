@@ -24,7 +24,7 @@ CDNJS = https://cdnjs.cloudflare.com/ajax/libs
 # Files #######################################################################
 
 all: angular.min.js angular.min.js.map angular-mocks.js angular-route.min.js angular-route.min.js.map \
-     angucomplete-alt.min.js angular-ui-router.min.js angular-sanitize.min.js django-angular.min.js \
+     angucomplete-alt.min.js angular-ui-router.min.js angular-sanitize.min.js \
      icheck.min.js jquery.min.js jshint.js marked.min.js restangular.min.js underscore-min.js \
      underscore-min.map zxcvbn.js
 
@@ -51,11 +51,6 @@ angular-route.min.js.map:
 
 angular-ui-router.min.js:
 	$(GET) $@ $(CDNJS)/angular-ui-router/0.2.15/angular-ui-router.min.js
-
-# This is included in the django-angular package, but we include it here so
-# we can use it in javascript tests.
-django-angular.min.js:
-	$(GET) $@ https://github.com/open-craft/django-angular/raw/5f3e54f909b925eecb59dc4dd73b6e9fe27e9558/djng/static/djng/js/django-angular.min.js
 
 icheck.min.js:
 	$(GET) $@ https://github.com/fronteed/icheck/raw/6fd2ef473c16d74773bebb134d57621d877b140e/icheck.min.js

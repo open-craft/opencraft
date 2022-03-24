@@ -36,9 +36,9 @@ from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
+from grove.models.instance import GroveInstance
 from instance.gandi import api as gandi_api
 from instance.models.mixins.domain_names import generate_internal_lms_domain, is_subdomain_contains_reserved_word
-from grove.models.instance import GroveInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate

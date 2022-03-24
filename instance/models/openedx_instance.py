@@ -78,7 +78,11 @@ class OpenEdXInstance(
 
     # Most settings/fields are inherited from mixins
 
-    betatestapplication = fields.GenericRelation(BetaTestApplication, content_type_field='instance_type', object_id_field='instance_id')
+    betatestapplication = fields.GenericRelation(
+        BetaTestApplication,
+        content_type_field='instance_type',
+        object_id_field='instance_id'
+    )
     successfully_provisioned = models.BooleanField(default=False)
     database_name = models.CharField(blank=False, unique=True, max_length=60)
 
