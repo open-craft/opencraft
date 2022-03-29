@@ -195,15 +195,26 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
                     'query': query,
                 },
                 'signal': {
-                    'aggregation_window': f"{settings.NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION}",
-                    'aggregation_method': 'CADENCE',
-                    'aggregation_delay': 120,
+                    #
+                    'aggregation_window': settings.NEWRELIC_NRQL_SIGNAL_AGGREGATION_WINDOW,
+                    # Event Flow aggregation is best designed to be used for situations when data come in frequently
+                    # and with low event spread, or mostly "in-order". The original "cadence" aggregation method used
+                    # to trigger false positive alerts.
+                    'aggregation_method': 'EVENT_FLOW',
+                    # How long we wait for data that belongs in each aggregation window. A longer delay may increase
+                    # accuracy but delay notifications. Here we set 20% for the delay in seconds of the aggregation
+                    # window. This means if the window is set to 10 minutes, we will wait an additional 2 minute before
+                    # we send an alert.
+                    'aggregation_delay': int(settings.NEWRELIC_NRQL_SIGNAL_AGGREGATION_WINDOW * 0.2),
                     'fill_option': 'static',
                     'fill_value': '0.0',
-                    'slide_by': 60
+                    # Gathers data in overlapping time windows to smooth the chart line, making it easier to spot
+                    # trends. The slide_by value is specified in seconds and must be smaller than and a factor of the
+                    # aggregation_window
+                    'slide_by': int(settings.NEWRELIC_NRQL_SIGNAL_AGGREGATION_WINDOW * 0.1)
                 },
                 'expiration': {
-                    'expiration_duration': settings.NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION,
+                    'expiration_duration': settings.NEWRELIC_NRQL_SIGNAL_AGGREGATION_WINDOW,
                     'open_violation_on_expiration': False,
                     'close_violations_on_expiration': True,
                 }
