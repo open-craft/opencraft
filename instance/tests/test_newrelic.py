@@ -222,9 +222,9 @@ class NewRelicTestCase(TestCase):
 
     @responses.activate
     @override_settings(
-        NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD='2',
-        NEWRELIC_NRQL_ALERT_CONDITION_DURATION='16',
-        NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION='960',
+        NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD=2,
+        NEWRELIC_NRQL_ALERT_CONDITION_DURATION=16,
+        NEWRELIC_NRQL_SIGNAL_AGGREGATION_WINDOW=960,
     )
     def test_add_alert_nrql_condition(self):
         """
@@ -259,8 +259,8 @@ class NewRelicTestCase(TestCase):
                 'name': condition_name,
                 'enabled': True,
                 'terms': [{
-                    'duration': '16',
-                    'threshold': '2',
+                    'duration': 16,
+                    'threshold': 2,
                     'operator': 'above',
                     'priority': 'critical',
                     'time_function': 'any',
@@ -269,15 +269,15 @@ class NewRelicTestCase(TestCase):
                     'query': query,
                 },
                 'signal': {
-                    'aggregation_delay': 120,
-                    'aggregation_method': 'CADENCE',
-                    'aggregation_window': '960',
+                    'aggregation_delay': 192,
+                    'aggregation_method': 'EVENT_FLOW',
+                    'aggregation_window': 960,
                     'fill_option': 'static',
                     'fill_value': '0.0',
-                    'slide_by': 60
+                    'slide_by': 96
                 },
                 'expiration': {
-                    'expiration_duration': '960',
+                    'expiration_duration': 960,
                     'open_violation_on_expiration': False,
                     'close_violations_on_expiration': True,
                 }

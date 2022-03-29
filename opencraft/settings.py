@@ -815,14 +815,16 @@ NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
 NODE_EXPORTER_PASSWORD = env('NODE_EXPORTER_PASSWORD', default=None)
 
 # Threhold for NRQL alert condition
-NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD = env('NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD', default='1')
+NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD = env.int('NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD', default=1)
 
 # Duration for NRQL alert conditions (minutes)
-NEWRELIC_NRQL_ALERT_CONDITION_DURATION = env('NEWRELIC_NRQL_ALERT_CONDITION_DURATION', default='11')
+NEWRELIC_NRQL_ALERT_CONDITION_DURATION = env.int('NEWRELIC_NRQL_ALERT_CONDITION_DURATION', default=10)
 
-# Signal Expiration for NRQL loss of signal alert conditions (seconds)
-# Default is set to `NEWRELIC_NRQL_ALERT_CONDITION_DURATION` default
-NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION = env('NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION', default='660')
+# The duration of the time window used to evaluate the NRQL query, in seconds.
+# The value must be at least 30 seconds, and no more than 15 minutes (900 seconds).
+# Aggregation delay and data smoothing (slide_by) is calculated based on the aggregation window.
+# The default window is 10 minutes = 600 seconds.
+NEWRELIC_NRQL_SIGNAL_AGGREGATION_WINDOW = env.int('NEWRELIC_NRQL_SIGNAL_AGGREGATION_WINDOW', default=600)
 
 # Load balancing ##############################################################
 
