@@ -9,8 +9,12 @@
   <div class="row">
     <div class="large-10 columns">
       <ul class="instance-description">
-        <li>LMS: <a href="{{ instance.url }}" target="_new">{{ instance.url }}</a></li>
-        <li>Studio: <a href="{{ instance.studio_url }}" target="_new">{{ instance.studio_url }}</a></li>
+      <li>LMS: <a href="{{ instance.url }}" target="_new">{{ instance.url }}</a></li>
+      <li>Studio: <a href="{{ instance.studio_url }}" target="_new">{{ instance.studio_url }}</a></li>
+      <li>Instance Type: {{instance.instance_type}}</li>
+      <li ng-if="instance.instance_type == 'groveinstance'">
+          Config Repo: <a href="{{instance.configuration_source_repo_url}}">{{instance. configuration_source_repo_url}}</a>
+      </li>
       </ul>
     </div>
     <div class="large-2 columns">
