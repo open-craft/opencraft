@@ -26,7 +26,7 @@ import subprocess
 from unittest.mock import Mock, patch
 import urllib
 
-from MySQLdb import Error as MySQLError
+from MySQLdb import Error as MySQLError, connect as mysql_connect
 import ddt
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -72,6 +72,23 @@ class MySQLInstanceTestCase(TestCase):
                 self.instance.deprovision_mysql()
         super().tearDown()
 
+    def _get_mysql_cursor(self, host, user, password, database=""):
+        """
+        Return connection to mysql database
+
+        Args:
+            host (str): hostname
+            user (str): username
+            password (str): password for the user
+            database (str): database name defaults to ""
+
+        Returns:
+            returns a MySQLConnection object
+        """
+        conn = mysql_connect(host=host,user=user, password=password, database=database)
+        return conn.cursor()
+
+
     def _assert_privileges(self, database):
         """
         Assert that relevant users can access database
@@ -83,13 +100,15 @@ class MySQLInstanceTestCase(TestCase):
         users = [user] + additional_users + global_users
         for user in users:
             password = self.instance._get_mysql_pass(user)
-            # Pass password using MYSQL_PWD environment variable rather than the --password
-            # parameter so that mysql command doesn't print a security warning.
-            env = {'MYSQL_PWD': password}
-            mysql_cmd = "mysql -h 127.0.0.1 -u {user} -e 'SHOW TABLES' {db_name}".format(user=user,
-                                                                                         db_name=database_name)
-            tables = subprocess.call(mysql_cmd, shell=True, env=env)
-            self.assertEqual(tables, 0)
+            with self._get_mysql_cursor(
+                host=self.instance.mysql_server.hostname,
+                user=user,
+                password=password,
+                database=database_name,
+            ) as cursor:
+                cursor.execute(f"SHOW TABLES")
+                tables = cursor.fetchall()
+            self.assertEqual(tables, ())
 
     def check_mysql(self):
         """
@@ -98,7 +117,15 @@ class MySQLInstanceTestCase(TestCase):
         self.assertIs(self.instance.mysql_provisioned, True)
         self.assertTrue(self.instance.mysql_user)
         self.assertTrue(self.instance.mysql_pass)
-        databases = subprocess.check_output("mysql -h 127.0.0.1 -u root -e 'SHOW DATABASES'", shell=True).decode()
+        root_server = self.instance.mysql_server
+        with self._get_mysql_cursor(
+            host=root_server.hostname,
+            user=root_server.username,
+            password=root_server.password,
+        ) as cursor:
+            cursor.execute("SHOW DATABASES")
+            databases = cursor.fetchall()
+        databases = [dbname[0] for dbname in databases]
         for database in self.instance.mysql_databases:
             # Check if database exists
             database_name = database["name"]
@@ -252,10 +279,18 @@ class MySQLInstanceTestCase(TestCase):
         Don't provision a mysql database if instance has no MySQL server
         """
         self.instance = OpenEdXInstanceFactory()
+        root_server = self.instance.mysql_server
         self.instance.mysql_server = None
         self.instance.save()
         self.instance.provision_mysql()
-        databases = subprocess.check_output("mysql -h 127.0.0.1 -u root -e 'SHOW DATABASES'", shell=True).decode()
+        with self._get_mysql_cursor(
+            host=root_server.hostname,
+            user=root_server.username,
+            password=root_server.password,
+        ) as cursor:
+            cursor.execute("SHOW DATABASES")
+            databases = cursor.fetchall()
+        databases = [dbname[0] for dbname in databases]
         for database in self.instance.mysql_databases:
             self.assertNotIn(database["name"], databases)
 

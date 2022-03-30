@@ -16,8 +16,22 @@ services:
     ports:
       - "5432:5432"
 
+  mongodb:
+    image: mongo:5.0.6
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: opencraft
+      MONGO_INITDB_ROOT_PASSWORD: opencraft
+
+  mysqldb:
+    image: mysql:8.0.28-debian
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: opencraft
+
   redis:
-    image: postgres:12.6-alpine
     image: redis:4
     ports:
       - "6379:6379"
@@ -29,6 +43,8 @@ services:
     depends_on:
       - postgresql
       - redis
+      - mysqldb
+      - mongodb
     env_file: .env
     ports:
       - "127.0.0.1:5000:5000"
