@@ -110,7 +110,7 @@ class RedisInstanceMixin(models.Model):
 
         Username used to prefix redis keys and set ACLs on the Redis server.
         """
-        return f"{self.redis_username}_"
+        return self.redis_username
 
     def delete_redis_acl(self, client: redis.Redis):
         """
@@ -126,7 +126,7 @@ class RedisInstanceMixin(models.Model):
             username=self.redis_username,
             passwords=[f"+{self.redis_password}"],
             keys=[
-                f"{self.redis_key_prefix}*",
+                f"{self.redis_key_prefix}_*",
                 f"SINGLE_BEAT_{self.redis_key_prefix}",
             ],
             commands=["+@all"],
