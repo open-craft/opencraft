@@ -756,7 +756,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         if (not instance or not instance.get_latest_deployment()):
             if isinstance(instance, GroveInstance):
                 deployment_status = DeploymentState.preparing
-            elif not instance.successfully_provisioned:
+            elif (not instance or not instance.successfully_provisioned):
                 # Set to preparing if no existing deployments or provisioned appservers found
                 deployment_status = DeploymentState.preparing
         else:

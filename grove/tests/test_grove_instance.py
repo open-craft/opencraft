@@ -46,7 +46,7 @@ class GroveInstanceAPITestCase(APITestCase):
         self.assertIn('created', data)
         self.assertIn('modified', data)
         self.assertEqual(data['instance_type'], 'groveinstance')
-    
+
     @override_settings(USE_GROVE_INSTANCE=True)
     def test_list_grove_instances(self):
         """
@@ -56,8 +56,15 @@ class GroveInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
-        instance_1 = GroveInstanceFactory(internal_lms_domain='sample.example.org', edx_platform_commit=settings.DEFAULT_OPENEDX_RELEASE)
-        GroveInstanceFactory(internal_lms_domain='test.example.org', edx_platform_commit=settings.DEFAULT_OPENEDX_RELEASE)
+        instance_1 = GroveInstanceFactory(
+            internal_lms_domain='sample.example.org',
+            edx_platform_commit=settings.DEFAULT_OPENEDX_RELEASE
+        )
+        # create one more instance
+        GroveInstanceFactory(
+            internal_lms_domain='test.example.org',
+            edx_platform_commit=settings.DEFAULT_OPENEDX_RELEASE
+        )
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -69,8 +76,10 @@ class GroveInstanceAPITestCase(APITestCase):
         Get - Retrieve grove instance details
         """
         self.api_client.login(username='user3', password='pass')
-        instance = GroveInstanceFactory(internal_lms_domain='sample.example.org', edx_platform_commit=settings.DEFAULT_OPENEDX_RELEASE)
+        instance = GroveInstanceFactory(
+            internal_lms_domain='sample.example.org',
+            edx_platform_commit=settings.DEFAULT_OPENEDX_RELEASE
+        )
         response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_serialized_instance(response.data, instance)
-

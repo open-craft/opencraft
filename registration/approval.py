@@ -23,6 +23,7 @@ These functions are meant to be used manually from the interactive Python shell.
 
 # Imports #####################################################################
 
+from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
 
 from instance.models.appserver import AppServer
@@ -71,16 +72,17 @@ def on_appserver_spawned(sender, **kwargs):
     """
     instance = kwargs['instance']
     appserver = kwargs['appserver']
-    application = instance.betatestapplication_set.first()  # There should only be one
+    instance_type = ContentType.objects.get_for_model(instance)
+    application = BetaTestApplication.objects.filter(instance_type=instance_type, instance_id=instance.id)
 
-    if not application or application.status != BetaTestApplication.PENDING:
+    if not application or application[0].status != BetaTestApplication.PENDING:
         return
 
     elif appserver is None:
         raise ApplicationNotReady('Provisioning of AppServer failed.')
 
     else:
-        accept_application(application, appserver)
+        accept_application(application[0], appserver)
 
 
 # Exceptions ##################################################################
