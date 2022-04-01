@@ -501,7 +501,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
 
         redis_transport_options = {
             "CELERY_BROKER_TRANSPORT_OPTIONS": {
-                "global_keyprefix": self.redis_key_prefix
+                "global_keyprefix": f"{self.redis_key_prefix}_"
             }
         }
 
