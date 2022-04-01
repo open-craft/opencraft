@@ -36,7 +36,7 @@ from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
-from grove.models.instance import GroveInstance
+from grove.switchboard import use_grove_deployment
 from instance.gandi import api as gandi_api
 from instance.models.mixins.domain_names import generate_internal_lms_domain, is_subdomain_contains_reserved_word
 from instance.models.utils import ValidateModelMixin
@@ -48,6 +48,17 @@ logger = logging.getLogger(__name__)
 
 
 # Models ######################################################################
+
+def get_instance_model():
+    """
+    Imports and returns the instance model based on the feature flag
+    """
+    if use_grove_deployment():
+        from grove.models.instance import GroveInstance
+        return GroveInstance
+    else:
+        from instance.models.openedx_instance import OpenEdXInstance
+        return OpenEdXInstance
 
 
 def validate_color(color):
@@ -100,7 +111,8 @@ def validate_available_external_domain(value):
             code='unique'
         )
 
-    is_taken = GroveInstance.objects.filter(
+    instance_model = get_instance_model()
+    is_taken = instance_model.objects.filter(
         Q(external_lms_domain=domain)
         | Q(external_lms_preview_domain__endswith=domain)
         | Q(external_studio_domain__endswith=domain)
@@ -140,7 +152,8 @@ def validate_available_subdomain(value):
     # check already raises the error
     generated_domain = generate_internal_lms_domain(value)
     is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=value).exists()
-    is_assigned_to_instance = GroveInstance.objects.filter(internal_lms_domain=generated_domain).exists()
+    instance_model = get_instance_model()
+    is_assigned_to_instance = instance_model.objects.filter(internal_lms_domain=generated_domain).exists()
 
     if is_subdomain_registered or is_assigned_to_instance:
         raise ValidationError(message='This domain is already taken.', code='unique')
@@ -489,7 +502,8 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         if is_subdomain_updated:
             validate_available_subdomain(self.subdomain)
 
-        if GroveInstance.objects.filter(internal_lms_domain=generated_domain).exists():
+        instance_model = get_instance_model()
+        if instance_model.objects.filter(internal_lms_domain=generated_domain).exists():
             subdomain_error = ValidationError(
                 message='This domain is already taken.',
                 code='unique',
@@ -504,7 +518,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             if is_external_domain_updated:
                 validate_available_external_domain(self.external_domain)
 
-            if GroveInstance.objects.filter(external_lms_domain=self.external_domain).exists():
+            if instance_model.objects.filter(external_lms_domain=self.external_domain).exists():
                 external_domain_error = ValidationError(
                     message='This domain is already taken.',
                     code='unique',
