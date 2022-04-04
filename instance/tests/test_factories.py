@@ -29,7 +29,6 @@ from django.test import override_settings
 import yaml
 
 from instance.factories import instance_factory, production_instance_factory
-from instance.models.database_server import MongoDBServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
 
