@@ -37,8 +37,10 @@ from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
 from grove.switchboard import use_grove_deployment
+from grove.models.instance import GroveInstance
 from instance.gandi import api as gandi_api
 from instance.models.mixins.domain_names import generate_internal_lms_domain, is_subdomain_contains_reserved_word
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate
@@ -51,14 +53,9 @@ logger = logging.getLogger(__name__)
 
 def get_instance_model():
     """
-    Imports and returns the instance model based on the feature flag
+    Returns the instance model based on the feature flag
     """
-    if use_grove_deployment():
-        from grove.models.instance import GroveInstance
-        return GroveInstance
-    else:
-        from instance.models.openedx_instance import OpenEdXInstance
-        return OpenEdXInstance
+    return GroveInstance if use_grove_deployment() else OpenEdXInstance
 
 
 def validate_color(color):
