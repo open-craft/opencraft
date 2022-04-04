@@ -164,7 +164,7 @@ class Command(BaseCommand):
             external_lms_domain = instance.external_lms_domain or 'N/A'
 
             try:
-                betatestapplication = instance.betatestapplication_set.get()
+                betatestapplication = instance.betatestapplication.get()
                 email = betatestapplication.user.email
                 status = betatestapplication.status
             except BetaTestApplication.DoesNotExist:

@@ -75,11 +75,11 @@ def on_appserver_spawned(sender, **kwargs):
     instance_type = ContentType.objects.get_for_model(instance)
     application = BetaTestApplication.objects.filter(instance_type=instance_type, instance_id=instance.id)
 
-    if appserver is None:
-        raise ApplicationNotReady('Provisioning of AppServer failed.')
-
-    elif not application or application[0].status != BetaTestApplication.PENDING:
+    if not application or application[0].status != BetaTestApplication.PENDING:
         return
+
+    elif appserver is None:
+        raise ApplicationNotReady('Provisioning of AppServer failed.')
 
     else:
         accept_application(application[0], appserver)

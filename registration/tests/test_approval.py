@@ -122,8 +122,18 @@ class ApprovalTestCase(TestCase):
     def test_appserver_spawned(self):
         """ Basic test for appserver_spawned() failure and success behaviour """
 
+        user = BetaTestUserFactory()
+
         instance = OpenEdXInstanceFactory()
-        application = mock.Mock(status=BetaTestApplication.PENDING)
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            status=BetaTestApplication.PENDING
+        )
         instance.betatestapplication.first = lambda: application
 
         # Test failed spawning generates an exception in case of pending application

@@ -341,7 +341,6 @@ if settings.CLEANUP_OLD_BETATEST_USERS:
             profile__instancereference__isnull=True,
             openedxinstance__isnull=True,
             openedxappserver__isnull=True,
-            betatestapplication__instance__isnull=True,
 
             # at least specified days old
             betatestapplication__created__lte=inactive_cutoff
