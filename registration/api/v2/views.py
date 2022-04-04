@@ -48,7 +48,6 @@ from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
 
 from grove.models.instance import GroveInstance
-from grove.models.deployment import GroveDeployment
 
 from instance.models.deployment import DeploymentType
 from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
@@ -719,6 +718,9 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         """
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+    # Pylint has a bug showing useless-suppression if too-many-branches defined
+    # otherwise it shows that too-many-branches are violated.
+    # pylint: disable=useless-suppression
     def retrieve(self, request, *args, **kwargs):  # pylint: disable=too-many-branches
         """
         Retrieves the deployment status for a given betatest instance.

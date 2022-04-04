@@ -27,11 +27,11 @@ from unittest import mock
 from django.test import TestCase
 
 from instance.models.appserver import AppServer
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from marketing.models import Subscriber
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 from registration.tests.utils import BetaTestUserFactory
-from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
 
 # Test cases ##################################################################
