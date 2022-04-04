@@ -593,4 +593,4 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         # Test accepting beta test application
         on_appserver_spawned(None, instance=instance, appserver=appserver)
-        self.assertEqual(instance.betatestapplication_set.first().status, BetaTestApplication.ACCEPTED)
+        self.assertEqual(instance.betatestapplication.first().status, BetaTestApplication.ACCEPTED)

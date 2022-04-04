@@ -136,7 +136,7 @@ class Command(BaseCommand):
                 instance_age = datetime.now(instance.created.tzinfo) - instance.created
 
                 try:
-                    email = instance.betatestapplication_set.get().user.email
+                    email = instance.betatestapplication.get().user.email
                 except BetaTestApplication.DoesNotExist:
                     email = 'N/A'
 
