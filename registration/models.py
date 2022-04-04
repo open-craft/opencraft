@@ -23,6 +23,7 @@ Models for the Instance Manager beta test
 # Imports #####################################################################
 
 import logging
+from importlib import import_module
 import tldextract
 
 from django.conf import settings
@@ -36,11 +37,10 @@ from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
-from grove.switchboard import use_grove_deployment
 from grove.models.instance import GroveInstance
+from grove.switchboard import use_grove_deployment
 from instance.gandi import api as gandi_api
 from instance.models.mixins.domain_names import generate_internal_lms_domain, is_subdomain_contains_reserved_word
-from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate
@@ -51,11 +51,31 @@ logger = logging.getLogger(__name__)
 
 # Models ######################################################################
 
-def get_instance_model():
+def get_instance_model(instance=None):
     """
-    Returns the instance model based on the feature flag
+    Returns the instance model based the provided instance or feature flag.
+
+    If the instance is not given, the returned instance model class is returned
+    after dynamically importing the model from the python dotted path. This is
+    necessary to avoid circular imports or importing the module if it is already
+    available globally.
     """
-    return GroveInstance if use_grove_deployment() else OpenEdXInstance
+
+    if instance is not None:
+        return instance._meta.model
+
+    if use_grove_deployment():
+        class_path = "grove.models.instance.GroveInstance"
+    else:
+        class_path = "instance.models.openedx_instance.OpenEdXInstance"
+
+    *module_parts, class_name = class_path.split(".")
+    module = ".".join(module_parts)
+
+    if not hasattr(globals(), module):
+        globals()[module] = import_module(module)
+
+    return getattr(globals()[module], class_name)
 
 
 def validate_color(color):
@@ -499,7 +519,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         if is_subdomain_updated:
             validate_available_subdomain(self.subdomain)
 
-        instance_model = get_instance_model()
+        instance_model = get_instance_model(self.instance)
         if instance_model.objects.filter(internal_lms_domain=generated_domain).exists():
             subdomain_error = ValidationError(
                 message='This domain is already taken.',

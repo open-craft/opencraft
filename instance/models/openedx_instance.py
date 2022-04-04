@@ -51,6 +51,7 @@ from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.models.utils import ConsulAgent, WrongStateException, get_base_playbook_name
 from instance.signals import appserver_spawned
 from instance.utils import sufficient_time_passed
+from registration.models import BetaTestApplication
 
 
 # Models ######################################################################
@@ -78,7 +79,7 @@ class OpenEdXInstance(
     # Most settings/fields are inherited from mixins
 
     betatestapplication = fields.GenericRelation(
-        'BetaTestApplication',
+        BetaTestApplication,
         content_type_field='instance_type',
         object_id_field='instance_id'
     )
