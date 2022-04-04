@@ -401,20 +401,20 @@ workflows:
       - build:
           name: quality_migrations_tests
           tests_group: 0
-          tests_type: clean test.quality test.migrations_missing
+          tests_type: TEST_ENV_FILE=.env.test.ci clean test.quality test.migrations_missing
       - build:
           name: python_unit_tests
           tests_group: 0
-          tests_type: clean test.unit
+          tests_type: TEST_ENV_FILE=.env.test.ci clean test.unit
       - build:
           name: browser_tests
           tests_group: 0
-          tests_type: clean test.browser
+          tests_type: TEST_ENV_FILE=.env.test.ci clean test.browser
       - e2e-tests
       - build:
           name: js_tests
           tests_group: 0
-          tests_type: clean test.js
+          tests_type: TEST_ENV_FILE=.env.test.ci clean test.js
       - build:
           name: integration_tests_group_1
           tests_group: 1
@@ -490,7 +490,7 @@ workflows:
               ignore: /.*/
             tags:
               only: /^release\-\w+\-\w+$/
-  
+
   # used for periodically cleaning up left-over resources
   scheduled-cleanup:
     triggers:

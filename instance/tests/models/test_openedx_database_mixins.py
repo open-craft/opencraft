@@ -22,7 +22,6 @@ OpenEdXInstance Database Mixins - Tests
 
 # Imports #####################################################################
 
-import subprocess
 from unittest.mock import Mock, patch
 import urllib
 
@@ -85,9 +84,8 @@ class MySQLInstanceTestCase(TestCase):
         Returns:
             returns a MySQLConnection object
         """
-        conn = mysql_connect(host=host,user=user, password=password, database=database)
+        conn = mysql_connect(host=host, user=user, password=password, database=database)
         return conn.cursor()
-
 
     def _assert_privileges(self, database):
         """
@@ -100,12 +98,10 @@ class MySQLInstanceTestCase(TestCase):
         users = [user] + additional_users + global_users
         for user in users:
             password = self.instance._get_mysql_pass(user)
-            with self._get_mysql_cursor(
-                host=self.instance.mysql_server.hostname,
-                user=user,
-                password=password,
-                database=database_name,
-            ) as cursor:
+            with self._get_mysql_cursor(host=self.instance.mysql_server.hostname,
+                                        user=user,
+                                        password=password,
+                                        database=database_name) as cursor:
                 cursor.execute(f"SHOW TABLES")
                 tables = cursor.fetchall()
             self.assertEqual(tables, ())
@@ -118,11 +114,9 @@ class MySQLInstanceTestCase(TestCase):
         self.assertTrue(self.instance.mysql_user)
         self.assertTrue(self.instance.mysql_pass)
         root_server = self.instance.mysql_server
-        with self._get_mysql_cursor(
-            host=root_server.hostname,
-            user=root_server.username,
-            password=root_server.password,
-        ) as cursor:
+        with self._get_mysql_cursor(host=root_server.hostname,
+                                    user=root_server.username,
+                                    password=root_server.password) as cursor:
             cursor.execute("SHOW DATABASES")
             databases = cursor.fetchall()
         databases = [dbname[0] for dbname in databases]
@@ -283,11 +277,9 @@ class MySQLInstanceTestCase(TestCase):
         self.instance.mysql_server = None
         self.instance.save()
         self.instance.provision_mysql()
-        with self._get_mysql_cursor(
-            host=root_server.hostname,
-            user=root_server.username,
-            password=root_server.password,
-        ) as cursor:
+        with self._get_mysql_cursor(host=root_server.hostname,
+                                    user=root_server.username,
+                                    password=root_server.password) as cursor:
             cursor.execute("SHOW DATABASES")
             databases = cursor.fetchall()
         databases = [dbname[0] for dbname in databases]
