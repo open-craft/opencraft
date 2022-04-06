@@ -2,97 +2,18 @@
 
 ## Vagrant installation
 
-For development, we recommend using [Vagrant](https://www.vagrantup.com/)
-to automatically provision a development environment in a virtual machine. This
-helps to keep your development environment isolated from the rest of your
-system. Also, remember to use **Python 3.5.x** or **Python 3.6.x**(use `pyenv`) for your 
-vagrant environment as the playbooks only support them for now, and 
-**do not work** on Python 3.7 or higher.
+Vagrant toolchain is no longer supported,
+Docker is the recommended [development setup](development/docker.md).
 
-Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
-virtual machines with the developer environment set up. To provision and
-configure the developer environment as needed, Vagrant uses
-[Ansible](https://www.ansible.com/).
+### Local installation (skip this if using docker)
 
-First, make sure that Intel VT-x/AMD-v virtualization is enabled in your BIOS / UEFI
-firmware. Then, you will need to install all these tools before you can set up your
-development environment:
-
-- [Vagrant Download](https://www.vagrantup.com/downloads.html)
-- [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
-
-**NOTE**: Althought you are not prompted to do so, we recommend Mac users reboot
-after installation of these utilities to ensure all network extensions work properly.  
-
-Install the plugin vagrant-vbguest:
-
-    vagrant plugin install vagrant-vbguest
-
-Once you have these tools installed, download the [Ocim repository](https://github.com/open-craft/opencraft) if you have not already done it.
-
-    git clone https://github.com/open-craft/opencraft ocim
-    cd ocim
-
-Also download the [Ansible playbooks](https://github.com/open-craft/ansible-playbooks)
-used to build the Vagrant instance into the `deploy/` subdirectory:
-
-    git clone https://github.com/open-craft/ansible-playbooks deploy
-
-If you already have a clone of that repository, create a symlink `deploy`
-pointing to it instead:
-
-    ln -s <cloned_repo_path> deploy
-
-Create a new virtualenv to install the dependencies of the `ansible-playbooks`
-repository – most notably Ansible:
-
-    virtualenv ~/venvs/ansible    # Adjust the path, or use mkvirtualenv
-                                  # if you have virtualenvwrapper installed.
-    . ~/venvs/ansible/bin/activate
-    pip install -r deploy/requirements.txt
-
-Now you can run:
-
-    vagrant up
-
-This will provision a virtual machine running Ubuntu 16.04, set up local
-Postgres, MySQL, MongoDB and Redis, and install the dependencies.
-
-Once the virtual machine is up and running, you can ssh into it with this
-command:
-
-    vagrant ssh
-
-Once inside the VM, you will need to run the initial database migrations:
-
-    make migrate
-
-Next, create a superuser account which will be used to log in to Ocim:
-
-    make manage createsuperuser
-
-To check if everything is set up properly, you can run ``make test.unit`` inside
-your new environment.
-
-Vagrant will set up a VirtualBox share mapping your local development directory
-to `/vagrant` inside the virtual machine. Any changes you make locally will be
-reflected inside the virtual machine automatically.
-
-Vagrant will map port 5000 inside the virtual machine to port 5000 on the host.
-Once you have set everything up, you will be able to access the home webpage of
-the [development server](#run) at http://localhost:5000/ using your web browser. Log in
-with the previously created superuser account credentials and you will then be
-redirected to the Ocim webpage which lists the Open edX instances.
-
-### Local installation (skip this if using Vagrant)
-
-If you prefer not to use Vagrant, you can install OpenCraft Instance Manager manually.
-Refer to the [Ansible playbooks](https://github.com/open-craft/ansible-playbooks) used
-by Vagrant for an example. Ocim requires Python 3.6 or a newer version. The instructions
-here are based on Ubuntu 16.04. Since Ubuntu 16.04 ships with Python 3.5, we will use `pyenv`
-to install a newer, supported version on it. This is not required when a supported version of
-Python is available. All the `pyenv` commands can be then ignored and the built-in `venv` module
-can be used to create a virtualenv environment.
+If you prefer not to use docker, you can install OpenCraft Instance Manager manually.
+Refer to the [Ansible playbooks](https://github.com/open-craft/ansible-playbooks).
+Ocim requires Python 3.6 or a newer version. The instructions here are based on
+Ubuntu 16.04. Since Ubuntu 16.04 ships with Python 3.5, we will use `pyenv` to
+install a newer, supported version on it. This is not required when a supported
+version of Python is available. All the `pyenv` commands can be then ignored
+and the built-in `venv` module can be used to create a virtualenv environment.
 
 Install [pyenv](https://github.com/pyenv/pyenv) by following the [pyenv documentation](https://github.com/pyenv/pyenv#installation).
 Also install [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv#installation) by following its [documentation](https://github.com/pyenv/pyenv-virtualenv#installation).
