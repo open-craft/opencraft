@@ -4,9 +4,7 @@ A single-page app(SPA) for the [OpenCraft Instance Manager (OCIM)](https://githu
 
 ## Running Locally
 
-Run this outside the vagrant environment, but it is possible to run this frontend server within Vagrant during
-development, for performance reasons it's better to run it separately outside of Vagrant instead. Also, use this
-devstack as an independent React SPA.
+Use this devstack as an independent React SPA.
 
 - Install the API client:
 

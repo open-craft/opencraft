@@ -26,10 +26,11 @@ COVERAGE_THRESHOLD ?= 90
 WORKERS ?= 3
 WORKERS_LOW_PRIORITY ?= 3
 SHELL ?= /bin/bash
+TEST_ENV_FILE := .env.test
 HONCHO_MANAGE := honcho run python3 manage.py
-HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
+HONCHO_MANAGE_TESTS := honcho -e ${TEST_ENV_FILE} run python3 manage.py
 HONCHO_MANAGE_E2E_TESTS := honcho -e .env.e2e run python3 manage.py e2e_test
-HONCHO_COVERAGE_TEST := honcho -e .env.test run coverage run --branch --parallel-mode ./manage.py test --noinput -v2
+HONCHO_COVERAGE_TEST := honcho -e ${TEST_ENV_FILE} run coverage run --branch --parallel-mode ./manage.py test --noinput -v2
 HONCHO_COVERAGE_INTEGRATION := honcho -e .env.integration run coverage run --branch --parallel-mode ./manage.py test --noinput -v2
 COVERAGE := coverage run --branch --parallel-mode ./manage.py test --noinput -v2
 

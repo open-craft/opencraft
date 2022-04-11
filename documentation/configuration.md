@@ -3,8 +3,8 @@ Configuration
 
 [Honcho](https://honcho.readthedocs.io/en/latest/) will set up environment
 variables defined in the `.env` file at the root of your repository. If you are
-using vagrant for development, a basic `.env` file will already have been
-created for you, but you will need to add credentials for third-party services
+using docker for development, a basic `.env` file can be created by copying
+.env.test file, but you will need to add credentials for third-party services
 manually in order to run the development server or the integration tests.
 
 The environment variables in `.env` customize the settings from
