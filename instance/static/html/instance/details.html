@@ -8,12 +8,16 @@
 <div class="panel">
   <div class="row">
     <div class="large-10 columns">
-      <ul class="instance-description">
+      <ul class="instance-description" ng-if="instance.instance_type != 'groveinstance'">
         <li>LMS: <a href="{{ instance.url }}" target="_new">{{ instance.url }}</a></li>
         <li>Studio: <a href="{{ instance.studio_url }}" target="_new">{{ instance.studio_url }}</a></li>
       </ul>
+      <span ng-if="instance.instance_type == 'groveinstance'">
+        Instance configuration for Grove managed instances are stored in a GitLab repository, hence the LMS and Studio
+        URL cannot be retrieved reliably.
+      </span>
     </div>
-    <div class="large-2 columns">
+    <div class="large-2 columns" ng-if="instance.instance_type != 'groveinstance'">
       <span class="status radius label"
         ng-repeat="appserver in instance.active_appservers | orderBy: 'id'"
         ng-class="{warning: !appserver.is_healthy, success: appserver.is_healthy}"
@@ -51,11 +55,34 @@
 </div>
 
 <tabset>
+  <tab heading="Grove Deployments" active="instance_active_tabs.grovedeployments_tab" >
+    <div class="row">
+      <div class="large-3 columns">
+        <h4>Grove Deployments</h4>
+        <button class="small" ng-click="trigger_grove_deployment()" ng-disabled="instance.instance_type != 'groveinstance'">
+          <i class="fa fa-plus" ng-class="{'fa-spin': is_spawning_appserver}"></i> Trigger new Deployment
+        </button>
+        <ul class="side-nav appserver-list">
+          <li ng-repeat="deployment in instance.deployments | orderBy: 'id'" ng-class="{active: deployment.id == state.params.deploymentId}">
+            <a ui-sref="instances.details.grove_deployment_details({deploymentId: deployment.id})" >
+              <i class="fa fa-server"></i> <span class="appserver-name">Deployment {{ $index + 1 }} (#{{ deployment.id }})</span>
+              <ul>
+                <li>{{ deployment.status }}</li>
+              </ul>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="large-9 columns ui-view">
+        <!-- Grove configuration details appear here -->
+      </div>
+    </div>
+  </tab>
   <tab heading="App Servers" active="instance_active_tabs.appservers_tab">
     <div class="row">
       <div class="large-3 columns">
         <h4>App Servers</h4>
-        <button class="small" ng-click="spawn_appserver()" ng-disabled="is_spawning_appserver">
+        <button class="small" ng-click="spawn_appserver()" ng-disabled="is_spawning_appserver || instance.instance_type != 'openedxinstance'">
           <i class="fa fa-plus" ng-class="{'fa-spin': is_spawning_appserver}"></i> Launch new AppServer
         </button>
         <ul class="side-nav appserver-list">
@@ -63,9 +90,7 @@
             <a ng-click='loadAllAppServers()'>(show all {{ instance.appserver_count }})</a>
           </li>
 
-          <li ng-repeat="appserver in instance.appservers | orderBy: 'id'"
-              ng-class="{'active-server': appserver.is_active,
-                         active: appserver.id == state.params.appserverId}">
+          <li ng-repeat="appserver in instance.appservers | orderBy: 'id'" ng-class="{'active-server': appserver.is_active, active: appserver.id == state.params.appserverId}">
             <a ui-sref="instances.details.openedx_appserver_details({appserverId: appserver.id})">
               <i class="fa fa-server"></i> <span class="appserver-name">{{ appserver.name }}</span>
               <span ng-if="appserver.is_active">(Active)</span>
@@ -77,7 +102,7 @@
         </ul>
       </div>
       <div class="large-9 columns ui-view">
-      <!-- AppServer details appear here -->
+        <!-- AppServer details appear here -->
       </div>
     </div>
   </tab>
@@ -102,29 +127,34 @@
         <tr><td>Internal domain</td><td>{{ instance.internal_lms_domain }}</td></tr>
         <tr><td>HTTP auth username</td><td>{{ instance.http_auth_user }}</td></tr>
         <tr><td>HTTP auth password</td><td>{{ instance.http_auth_pass }}</td></tr>
-        <tr><td>Load-balancing server</td><td>{{ instance.load_balancing_server }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>Load-balancing server</td><td>{{ instance.load_balancing_server }}</td></tr>
         <tr><td>Email</td><td>{{ instance.email }}</td></tr>
         <tr><td>Deploy simple_theme</td><td>{{ instance.deploy_simpletheme }}</td></tr>
         <tr><td>Creator (Ocim user)</td><td>{{ instance.creator_username }}</td></tr>
         <tr><td>Owner organization</td><td>{{ instance.owner_organization }}</td></tr>
+        <tr><td>Deployment method</td><td>{{ instance.instance_type == "groveinstance" ? "Grove" : "Openstack" }}</td></tr>
         <tr><td>configuration_source_repo_url</td><td>{{ instance.configuration_source_repo_url }}</td></tr>
         <tr><td>configuration_version</td><td>{{ instance.configuration_version }}</td></tr>
         <tr><td>configuration_playbook_name</td><td>{{ instance.configuration_playbook_name }}</td></tr>
         <tr><td>edx_platform_repository_url</td><td>{{ instance.edx_platform_repository_url }}</td></tr>
         <tr><td>edx_platform_commit</td><td>{{ instance.edx_platform_commit }}</td></tr>
-        <tr><td>Ansible appserver repo url</td><td>{{ instance.ansible_appserver_repo_url }}</td></tr>
-        <tr><td>Ansible appserver playbook</td><td>{{ instance.ansible_appserver_playbook }}</td></tr>
-        <tr><td>Ansible appserver requirements path</td><td>{{ instance.ansible_appserver_requirements_path }}</td></tr>
-        <tr><td>Ansible appserver version</td><td>{{ instance.ansible_appserver_version }}</td></tr>
         <tr><td>openedx_release</td><td>{{ instance.openedx_release }}</td></tr>
-        <tr><td>openstack_region</td><td>{{ instance.openstack_region }}</td></tr>
-        <tr><td>openstack_server_flavor</td><td>{{ instance.openstack_server_flavor }}</td></tr>
-        <tr><td>openstack_server_base_image</td><td>{{ instance.openstack_server_base_image }}</td></tr>
-        <tr><td>openstack_server_ssh_keyname</td><td>{{ instance.openstack_server_ssh_keyname }}</td></tr>
-        <tr><td>configuration_extra_settings</td><td><pre>{{ instance.configuration_extra_settings }}</pre></td></tr>
-        <tr><td>configuration_theme_settings</td><td><pre>{{ instance.configuration_theme_settings }}</pre></td></tr>
-        <tr><td>configuration_site_configuration_settings</td><td><pre>{{ instance.configuraton_site_configuration_settings }}</pre></td></tr>
-        <tr><td>Additional security groups</td><td><pre>{{ instance.additional_security_groups }}</pre></td></tr>
+        <!-- Grove specific settings -->
+        <tr ng-if="instance.instance_type == 'groveinstance'"><td>Grove cluster name</td><td>{{ instance.repository.name }}</td></tr>
+        <tr ng-if="instance.instance_type == 'groveinstance'"><td>Grove config repository</td><td><a href="{{ instance.repository.git_repo_url }}">{{ instance.repository.git_repo_url }}</a></td></tr>
+        <!-- Openstack specific settings -->
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>Ansible appserver repo url</td><td>{{ instance.ansible_appserver_repo_url }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>Ansible appserver playbook</td><td>{{ instance.ansible_appserver_playbook }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>Ansible appserver requirements path</td><td>{{ instance.ansible_appserver_requirements_path }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>Ansible appserver version</td><td>{{ instance.ansible_appserver_version }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>openstack_region</td><td>{{ instance.openstack_region }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>openstack_server_flavor</td><td>{{ instance.openstack_server_flavor }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>openstack_server_base_image</td><td>{{ instance.openstack_server_base_image }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>openstack_server_ssh_keyname</td><td>{{ instance.openstack_server_ssh_keyname }}</td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>configuration_extra_settings</td><td><pre>{{ instance.configuration_extra_settings }}</pre></td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>configuration_theme_settings</td><td><pre>{{ instance.configuration_theme_settings }}</pre></td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>configuration_site_configuration_settings</td><td><pre>{{ instance.configuraton_site_configuration_settings }}</pre></td></tr>
+        <tr ng-if="instance.instance_type != 'groveinstance'"><td>Additional security groups</td><td><pre>{{ instance.additional_security_groups }}</pre></td></tr>
         <tr><td>Additional monitoring email addresses</td><td>{{ instance.additional_monitoring_emails }}</td></tr>
         <tr><td>Email addresses monitoring AppServer provision failures</td><td>{{ instance.provisioning_failure_notification_emails }}</td></tr>
         <tr><td>Periodic builds enabled</td><td>{{ instance.periodic_builds_enabled }}</td></tr>
@@ -133,18 +163,20 @@
       </tbody>
     </table>
 
-    <h4>Status</h4>
-    <table>
-      <tbody>
-        <tr><td>MySQL provisioned</td><td>{{ instance.mysql_provisioned }}</td></tr>
-        <tr><td>Mongo provisioned</td><td>{{ instance.mongo_provisioned }}</td></tr>
-        <tr><td>RabbitMQ provisioned</td><td>{{ instance.rabbitmq_provisioned }}</td></tr>
-        <tr><td>Redis provisioned</td><td>{{ instance.redis_provisioned }}</td></tr>
-        <tr><td>DNS records set at</td><td>{{ instance.dns_records_updated | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
-      </tbody>
-    </table>
+    <div ng-if="instance.instance_type != 'groveinstance'">
+      <h4>Status</h4>
+      <table>
+        <tbody>
+          <tr><td>MySQL provisioned</td><td>{{ instance.mysql_provisioned }}</td></tr>
+          <tr><td>Mongo provisioned</td><td>{{ instance.mongo_provisioned }}</td></tr>
+          <tr><td>RabbitMQ provisioned</td><td>{{ instance.rabbitmq_provisioned }}</td></tr>
+          <tr><td>Redis provisioned</td><td>{{ instance.redis_provisioned }}</td></tr>
+          <tr><td>DNS records set at</td><td>{{ instance.dns_records_updated | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
+        </tbody>
+      </table>
+    </div>
   </tab>
-  <tab heading="Log" active="instance_active_tabs.log_tab">
+  <tab heading="Log" active="instance_active_tabs.log_tab" ng-if="instance.instance_type != 'groveinstance'">
     <p>This log does not include events from each App Server or VM. Select an App Server on the "App Servers" tab to view those logs.</p>
     <div ng-if="isFetchingLogs">
         Loading log...

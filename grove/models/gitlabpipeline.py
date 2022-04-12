@@ -38,13 +38,22 @@ class GitlabPipeline(TimeStampedModel):
     SKIPPED = 4
     CANCELLED = 5
 
+    STATUS_NAMES = (
+        'created',
+        'running',
+        'success',
+        'failed',
+        'skipped',
+        'cancelled',
+    )
+
     STATUS_CHOICES = (
-        (CREATED, 'created'),
-        (RUNNING, 'running',),
-        (SUCCESS, 'success',),
-        (FAILED, 'failed',),
-        (SKIPPED, 'skipped'),
-        (CANCELLED, 'cancelled'),
+        (CREATED, STATUS_NAMES[CREATED]),
+        (RUNNING, STATUS_NAMES[RUNNING]),
+        (SUCCESS, STATUS_NAMES[SUCCESS]),
+        (FAILED, STATUS_NAMES[FAILED]),
+        (SKIPPED, STATUS_NAMES[SKIPPED]),
+        (CANCELLED, STATUS_NAMES[CANCELLED]),
     )
 
     pipeline_id = models.PositiveIntegerField(
@@ -68,6 +77,11 @@ class GitlabPipeline(TimeStampedModel):
         if self.status != updated_status:
             self.status = updated_status
             self.save()
+
+        if self.status == self.FAILED:
+            deployment = self.grovedeployment_set.last()
+            deployment.status = deployment.FAILED
+            deployment.save()
 
     def get_deployment_status(self):
         """

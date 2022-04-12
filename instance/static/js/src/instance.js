@@ -89,6 +89,7 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', 
             $scope.updateInstanceList();
             $scope.webSocketMessageHandler = function(event) {
                 let data = JSON.parse(event.data);
+                console.log(data)
                 let event_name = 'websocket:' + data.message.type;
                 $scope.$broadcast(event_name, data.message);
             };
@@ -133,6 +134,10 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', 
             $scope.updateInstanceList();
         })
 
+        $scope.$on('websocket:grove_deployment_update', function(event, data){
+            $scope.updateInstanceList();
+        })
+
         $scope.init();
     }
 ]);
@@ -146,6 +151,7 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             $scope.is_updating_from_pr = false;
             $scope.instance_active_tabs = {};
             $scope.old_appserver_count = 0; // Remembers number of servers to detect when a new one appears
+            $scope.old_deployments_count = 0;
 
             $scope.instanceLogs = false;
             $scope.isFetchingLogs = false;
@@ -232,12 +238,16 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             // [Re]load the instance data from the server.
             return OpenCraftAPI.one("instance", $stateParams.instanceId).get().then(function(instance) {
                 $scope.instance = instance;
-                if (instance.appserver_count > $scope.old_appserver_count) {
+                const deployments_count = instance.deployments.length
+
+                if (instance.appserver_count > $scope.old_appserver_count || deployments_count > $scope.old_deployments_count) {
                     // There is a new AppServer. If we were expecting one, it is here now.
                     // So stop animations and re-enable the "Launch new AppServer" button.
                     $scope.is_spawning_appserver = false;
                 }
+
                 $scope.old_appserver_count = instance.appserver_count;
+                $scope.old_deployments_count = instance.deployments.length
 
                 if ('notes' in $scope.instance) {
                     $scope.originalNotes = $scope.instance.notes;
@@ -248,6 +258,12 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             });
         };
 
+        $scope.trigger_grove_deployment = function() {
+            $scope.is_spawning_appserver = true; // Disable the button
+
+            OpenCraftAPI.all("grove/deployments").post({instance: $stateParams.instanceId});
+        }
+
         $scope.spawn_appserver = function() {
             $scope.is_spawning_appserver = true; // Disable the button
 
@@ -256,12 +272,18 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
         };
 
         $scope.$on("websocket:instance_update", function(event, data){
-           if (data.instance_id == $stateParams.instanceId) {
-               $scope.refresh();
-           }
+            if (data.instance_id == $stateParams.instanceId) {
+                $scope.refresh();
+            }
         });
 
         $scope.$on("websocket:openedx_appserver_update", function(event, data){
+            if (data.instance_id == $stateParams.instanceId) {
+                $scope.refresh();
+            }
+        });
+
+        $scope.$on("websocket:grove_deployment_update", function(event, data){
             if (data.instance_id == $stateParams.instanceId) {
                 $scope.refresh();
             }
