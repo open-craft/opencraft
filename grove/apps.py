@@ -32,3 +32,5 @@ class GroveAppConfig(AppConfig):
         """
         Connect signal handlers when the app is ready.
         """
+        import grove.signals
+        assert grove.signals

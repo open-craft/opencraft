@@ -117,7 +117,7 @@ run.dev: clean migrations.check static_external ## Run the developmental server 
 	honcho start -f Procfile.dev
 
 run.dev_docker: clean migrations.check static_external ## Run the development server
-	python3 manage.py runserver 0.0.0.0:5000
+	honcho start -f Procfile.dev --concurrency "worker=1,worker_low_priority=1"
 
 shell: ## Start the power shell.
 	HUEY_QUEUE_NAME=opencraft_low_priority $(HONCHO_MANAGE) shell_plus

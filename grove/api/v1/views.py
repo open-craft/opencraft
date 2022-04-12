@@ -29,9 +29,7 @@ from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, CreateMode
 from rest_framework.permissions import IsAuthenticated
 
 from grove.models.deployment import GroveDeployment
-from grove.models.gitlabpipeline import GitlabPipeline
 from grove.serializers import GroveDeploymentSerializer
-from instance.models.instance import InstanceReference
 from opencraft.swagger import viewset_swagger_helper
 
 
@@ -70,22 +68,18 @@ class GroveDeploymentAPIView(RetrieveModelMixin, ListModelMixin, CreateModelMixi
         return GroveDeployment.objects.filter(instance__creator__user=user)
 
 
-def is_deployment_pipeline(body):
+def parse_commit_title(body):
     """
-    Check if the pipeline is related to instance deployment
+    Parse the commit message and return the regex match.
     """
-    return body.get('commit', '') and "deployment" in body['commit']['title']
 
-
-def get_instance(body):
-    """
-    Fetch instance related to deployment pipeline
-    """
-    instance_name = re.findall(r"deployment\/(\w+)\/", body['commit']['title'])
-    if not instance_name:
+    if not body.get('commit'):
         return None
 
-    return InstanceReference.objects.get(name=instance_name[0])
+    return re.match(
+        r"(Merge branch ')(deployment/(?P<instance>[\w\d\-_]+)/(?P<deployment>\d+))(' into '\w+')$",
+        body['commit']['title']
+    )
 
 
 @require_POST
@@ -95,21 +89,21 @@ def gitlab_webhook(request):
     Webhook endpoint for gitlab pipeline
     """
     payload = json.loads(request.body.decode('utf-8'))
-    if is_deployment_pipeline(payload):
-        pipeline_instance = get_instance(payload)
-        if pipeline_instance:
+    commit_title_match = parse_commit_title(payload)
+
+    if commit_title_match:
+        deployment_id = int(commit_title_match.group('deployment'))
+
+        if deployment_id:
             pipeline_id = payload['object_attributes']['id']
-            if GitlabPipeline.objects.filter(pipeline_id=pipeline_id).exists():
-                # pipeline already exists, call status update method
-                pipeline_obj = GitlabPipeline.objects.get(pipeline_id=pipeline_id)
-                new_status = payload['object_attributes']['status']
-                pipeline_obj.update_status(new_status)
-                pipeline_obj.save()
-            else:
-                # create new pipeline object for the deployment object
-                deployment = pipeline_instance.instance.get_latest_deployment()
-                new_pipeline = GitlabPipeline.objects.create(pipeline_id=pipeline_id, instance=pipeline_instance)
-                deployment.pipeline = new_pipeline
-                deployment.save()
+            new_status = payload['object_attributes']['status']
+
+            deployments = GroveDeployment.objects.filter(id=deployment_id)
+
+            if deployments:
+                pipeline = deployments[0].pipeline
+                pipeline.pipeline_id = pipeline_id
+                pipeline.update_status(new_status)
+                pipeline.save()
 
     return HttpResponse('Webhook received', status=200)

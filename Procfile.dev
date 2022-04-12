@@ -1,3 +1,4 @@
 web: python3 manage.py runserver 0.0.0.0:5000
 worker: python3 manage.py run_huey --no-periodic
 worker_low_priority: HUEY_QUEUE_NAME=opencraft_low_priority python3 manage.py run_huey --no-periodic
+periodic: python3 manage.py run_huey --workers=0
