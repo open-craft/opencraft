@@ -22,7 +22,8 @@
 API_CLIENT_PATH := frontend/packages/api_client
 .DEFAULT_GOAL := help
 HELP_SPACING ?= 30
-COVERAGE_THRESHOLD ?= 90
+# TODO: @gabor-boros set back to 90 after we are completely on Grove
+COVERAGE_THRESHOLD ?= 89
 WORKERS ?= 3
 WORKERS_LOW_PRIORITY ?= 3
 SHELL ?= /bin/bash
