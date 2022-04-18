@@ -47,7 +47,7 @@ services:
       - mongodb
     env_file: .env
     ports:
-      - "127.0.0.1:5000:5000"
+      - "5000:5000"
     volumes:
       - ./:/usr/src/ocim/
 
@@ -57,7 +57,7 @@ services:
     depends_on:
       - ocim
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     tty: true
     volumes:
       - ./frontend:/usr/src/ocim-frontend/

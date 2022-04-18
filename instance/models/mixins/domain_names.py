@@ -97,7 +97,7 @@ class DomainNameInstance(models.Model):
     internal_studio_domain = models.CharField(max_length=100, blank=False, unique=True)
     internal_discovery_domain = models.CharField(max_length=100, blank=False, unique=True)
     internal_ecommerce_domain = models.CharField(max_length=100, blank=False, unique=True)
-    internal_mfe_domain = models.CharField(max_length=100, blank=False, unique=True)
+    internal_mfe_domain = models.CharField(max_length=100, null=True, blank=False, unique=True)
 
     external_lms_domain = models.CharField(max_length=100, blank=True)
     external_lms_preview_domain = models.CharField(max_length=100, blank=True)

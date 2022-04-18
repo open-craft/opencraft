@@ -28,6 +28,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from instance.models.appserver import AppServer
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.approval import ApplicationNotReady, accept_application, on_appserver_spawned
 from registration.models import BetaTestApplication
 from registration.tests.utils import BetaTestUserFactory
@@ -75,8 +76,8 @@ class ApprovalTestCase(TestCase):
         """ Basic test for appserver_spawned() without an application """
 
         appserver = mock.Mock()
-        instance = mock.Mock()
-        instance.betatestapplication_set.first = lambda: None
+        instance = OpenEdXInstanceFactory()
+        instance.betatestapplication.first = lambda: None
 
         # Test nothing happens without an application
         with mock.patch('registration.approval.accept_application') as mock_application:
@@ -87,9 +88,9 @@ class ApprovalTestCase(TestCase):
         """ Basic test for appserver_spawned() with ACCEPTED application """
 
         appserver = mock.Mock()
-        instance = mock.Mock()
+        instance = OpenEdXInstanceFactory()
         application = mock.Mock(status=BetaTestApplication.ACCEPTED)
-        instance.betatestapplication_set.first = lambda: application
+        instance.betatestapplication.first = lambda: application
 
         # Test accepted application does nothing
         with mock.patch('registration.approval.accept_application') as mock_application:
@@ -100,9 +101,18 @@ class ApprovalTestCase(TestCase):
         """ Basic test for appserver_spawned() success """
 
         appserver = mock.Mock()
-        instance = mock.Mock()
-        application = mock.Mock(status=BetaTestApplication.PENDING)
-        instance.betatestapplication_set.first = lambda: application
+        instance = OpenEdXInstanceFactory()
+        user = BetaTestUserFactory()
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            status=BetaTestApplication.PENDING
+        )
+        instance.betatestapplication.first = lambda: application
 
         # Test accepted application does nothing
         with mock.patch('registration.approval.accept_application') as mock_application:
@@ -112,9 +122,19 @@ class ApprovalTestCase(TestCase):
     def test_appserver_spawned(self):
         """ Basic test for appserver_spawned() failure and success behaviour """
 
-        instance = mock.Mock()
-        application = mock.Mock(status=BetaTestApplication.PENDING)
-        instance.betatestapplication_set.first = lambda: application
+        user = BetaTestUserFactory()
+
+        instance = OpenEdXInstanceFactory()
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            status=BetaTestApplication.PENDING
+        )
+        instance.betatestapplication.first = lambda: application
 
         # Test failed spawning generates an exception in case of pending application
         with mock.patch('registration.approval.accept_application') as mock_application:
@@ -131,11 +151,18 @@ class ApprovalTestCase(TestCase):
         user = BetaTestUserFactory()
 
         appserver = mock.Mock(status=AppServer.Status.Running)
-        instance = mock.Mock(first_activated=None)
-        application = mock.Mock(user=user, status=BetaTestApplication.PENDING)
+        instance = OpenEdXInstanceFactory()
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            status=BetaTestApplication.PENDING
+        )
 
-        application.instance = instance
-        instance.betatestapplication_set.first = lambda: application
+        instance.betatestapplication.first = lambda: application
 
         # Test accepted application does nothing
         on_appserver_spawned(sender=None, instance=instance, appserver=appserver)

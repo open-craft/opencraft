@@ -445,7 +445,7 @@ class OpenEdXInstanceTestCase(TestCase):
             project_description='Test instance creation.',
             public_contact_email=user.email,
         )
-        self.assertEqual(instance.betatestapplication_set.count(), 1)
+        self.assertEqual(instance.betatestapplication.count(), 1)
 
         self.assertEqual(instance.appserver_set.count(), 0)
         with self.assertRaises(ApplicationNotReady):

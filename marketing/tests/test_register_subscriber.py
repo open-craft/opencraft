@@ -27,6 +27,7 @@ from unittest import mock
 from django.test import TestCase
 
 from instance.models.appserver import AppServer
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from marketing.models import Subscriber
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
@@ -48,11 +49,19 @@ class RegisterSubscriberTestCase(TestCase):
 
         user = BetaTestUserFactory()
 
-        instance = mock.Mock(first_activated=None)
-        application = mock.Mock(user=user, subdomain='test', status=BetaTestApplication.PENDING)
+        instance = OpenEdXInstanceFactory()
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            status=BetaTestApplication.PENDING
+        )
         appserver = mock.Mock(status=AppServer.Status.Running)
 
-        instance.betatestapplication_set.first = lambda: application
+        instance.betatestapplication.first = lambda: application
         application.instance = instance
 
         on_appserver_spawned(sender=None, instance=instance, appserver=appserver)
@@ -65,11 +74,19 @@ class RegisterSubscriberTestCase(TestCase):
 
         user = BetaTestUserFactory()
 
-        instance = mock.Mock(first_activated=None)
-        application = mock.Mock(user=user, subdomain='test', status=BetaTestApplication.ACCEPTED)
+        instance = OpenEdXInstanceFactory()
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            status=BetaTestApplication.ACCEPTED
+        )
         appserver = mock.Mock(status=AppServer.Status.Running)
 
-        instance.betatestapplication_set.first = lambda: application
+        instance.betatestapplication.first = lambda: application
         application.instance = instance
 
         on_appserver_spawned(sender=None, instance=instance, appserver=appserver)

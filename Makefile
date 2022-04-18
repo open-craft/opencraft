@@ -22,7 +22,8 @@
 API_CLIENT_PATH := frontend/packages/api_client
 .DEFAULT_GOAL := help
 HELP_SPACING ?= 30
-COVERAGE_THRESHOLD ?= 90
+# TODO: @gabor-boros set back to 90 after we are completely on Grove
+COVERAGE_THRESHOLD ?= 89
 WORKERS ?= 3
 WORKERS_LOW_PRIORITY ?= 3
 SHELL ?= /bin/bash
@@ -66,6 +67,7 @@ install_system_db_dependencies: apt_get_update ## Install system-level DB depend
 
 install_system_dependencies: apt_get_update ## Install system-level dependencies from `debian_packages.lst`. Ignores comments.
 	sudo -E apt-get install -y `grep -v '^#' debian_packages.lst | tr -d '\r'`
+	curl https://sh.rustup.rs -sSf | sh -s -- -y
 	if [ -z $$CI ] ; then \
 		echo "Installing Firefox because we're not in a CI."; \
 		sudo apt-get install -y libgtk3.0-cil-dev libasound2 libasound2 libdbus-glib-1-2 libdbus-1-3 --no-install-recommends; \

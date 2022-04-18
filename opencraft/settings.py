@@ -119,6 +119,7 @@ LOCAL_APPS = (
     'backup_swift',
     'periodic_builds',
     'marketing',
+    'grove',
 )
 
 if E2E_TESTS:
@@ -1008,3 +1009,18 @@ OPENEDX_ORACLEJDK_URL = env.str('OPENEDX_ORACLEJDK_URL', default='')
 
 # The value here will be used as the default configuration_extra_settings for production instances
 PRODUCTION_INSTANCE_EXTRA_CONFIGURATION = env.json('PRODUCTION_INSTANCE_EXTRA_CONFIGURATION', default={})
+
+# Grove #######################################################################
+
+USE_GROVE_INSTANCE = env.str('USE_GROVE_INSTANCE', default=False)
+GITLAB_API_BASE_URL = env.str('GITLAB_API_BASE_URL', default='https://gitlab.com/api/v4/')
+GITLAB_API_TOKEN = env.str('GITLAB_API_TOKEN', default='')
+
+GROVE_ENVIRONMENT = env.str('GROVE_ENVIRONMENT', default='production')
+GROVE_DEFAULT_REPOSITORY_NAME = env.str('GROVE_DEFAULT_REPOSITORY_NAME', default='Default Grove repository')
+GROVE_DEFAULT_REPOSITORY_PROJECT_ID = env.str('GROVE_DEFAULT_REPOSITORY_PROJECT_ID')
+GROVE_DEFAULT_REPOSITORY_UNLEASH_INSTANCE_ID = env.str('GROVE_DEFAULT_REPOSITORY_UNLEASH_INSTANCE_ID')
+GROVE_DEFAULT_REPOSITORY_GIT_REF = env.str('GROVE_DEFAULT_REPOSITORY_GIT_REF', default='main')
+GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN = env.str('GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN', default=GITLAB_API_TOKEN)
+DEFAULT_GITLAB_USER = env.str('DEFAULT_GITLAB_USER')
+DEFAULT_GITLAB_PERSONAL_ACCESS_TOKEN = env.str('DEFAULT_GITLAB_PERSONAL_ACCESS_TOKEN', default=GITLAB_API_TOKEN)

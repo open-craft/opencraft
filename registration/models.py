@@ -23,9 +23,12 @@ Models for the Instance Manager beta test
 # Imports #####################################################################
 
 import logging
+from importlib import import_module
 import tldextract
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import fields
 from django.contrib.postgres.fields import JSONField
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -34,9 +37,10 @@ from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
+from grove.models.instance import GroveInstance
+from grove.switchboard import use_grove_deployment
 from instance.gandi import api as gandi_api
 from instance.models.mixins.domain_names import generate_internal_lms_domain, is_subdomain_contains_reserved_word
-from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate
@@ -46,6 +50,32 @@ logger = logging.getLogger(__name__)
 
 
 # Models ######################################################################
+
+def get_instance_model(instance=None):
+    """
+    Returns the instance model based the provided instance or feature flag.
+
+    If the instance is not given, the returned instance model class is returned
+    after dynamically importing the model from the python dotted path. This is
+    necessary to avoid circular imports or importing the module if it is already
+    available globally.
+    """
+
+    if instance is not None:
+        return instance._meta.model
+
+    if use_grove_deployment():
+        class_path = "grove.models.instance.GroveInstance"
+    else:
+        class_path = "instance.models.openedx_instance.OpenEdXInstance"
+
+    *module_parts, class_name = class_path.split(".")
+    module = ".".join(module_parts)
+
+    if not hasattr(globals(), module):
+        globals()[module] = import_module(module)
+
+    return getattr(globals()[module], class_name)
 
 
 def validate_color(color):
@@ -98,7 +128,8 @@ def validate_available_external_domain(value):
             code='unique'
         )
 
-    is_taken = OpenEdXInstance.objects.filter(
+    instance_model = get_instance_model()
+    is_taken = instance_model.objects.filter(
         Q(external_lms_domain=domain)
         | Q(external_lms_preview_domain__endswith=domain)
         | Q(external_studio_domain__endswith=domain)
@@ -138,7 +169,8 @@ def validate_available_subdomain(value):
     # check already raises the error
     generated_domain = generate_internal_lms_domain(value)
     is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=value).exists()
-    is_assigned_to_instance = OpenEdXInstance.objects.filter(internal_lms_domain=generated_domain).exists()
+    instance_model = get_instance_model()
+    is_assigned_to_instance = instance_model.objects.filter(internal_lms_domain=generated_domain).exists()
 
     if is_subdomain_registered or is_assigned_to_instance:
         raise ValidationError(message='This domain is already taken.', code='unique')
@@ -399,12 +431,11 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         choices=STATUS_CHOICES,
         default=PENDING,
     )
-    instance = models.ForeignKey(
-        OpenEdXInstance,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
+    # Using GenericForeignKey to support both GroveInstance as well as OpenEdxInstance types
+    # Below three lines would eventually be replaced by only GroveInstance
+    instance_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    instance_id = models.PositiveIntegerField(null=True, blank=True)
+    instance = fields.GenericForeignKey('instance_type', 'instance_id')
     use_advanced_theme = models.BooleanField(
         default=False,
         help_text=('The advanced theme allows users to pick a lot more details than the regular theme.'
@@ -445,7 +476,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         """
         Return the activation date for the first AppServer to activate.
         """
-        if self.instance:
+        if self.instance and not isinstance(self.instance, GroveInstance):
             return self.instance.first_activated
         return None
 
@@ -488,7 +519,8 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         if is_subdomain_updated:
             validate_available_subdomain(self.subdomain)
 
-        if OpenEdXInstance.objects.filter(internal_lms_domain=generated_domain).exists():
+        instance_model = get_instance_model(self.instance)
+        if instance_model.objects.filter(internal_lms_domain=generated_domain).exists():
             subdomain_error = ValidationError(
                 message='This domain is already taken.',
                 code='unique',
@@ -503,7 +535,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             if is_external_domain_updated:
                 validate_available_external_domain(self.external_domain)
 
-            if OpenEdXInstance.objects.filter(external_lms_domain=self.external_domain).exists():
+            if instance_model.objects.filter(external_lms_domain=self.external_domain).exists():
                 external_domain_error = ValidationError(
                     message='This domain is already taken.',
                     code='unique',
