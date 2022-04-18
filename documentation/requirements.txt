@@ -10,8 +10,6 @@ click==7.0
     #   nltk
 future==0.18.2
     # via lunr
-importlib-metadata==3.3.0
-    # via markdown
 jinja2==2.11.3
     # via mkdocs
 joblib==1.0.0
@@ -25,12 +23,12 @@ markdown==3.3.3
 markupsafe==1.1.1
     # via jinja2
 mkdocs==1.1.2
-    # via -r documentation/requirements.in
+    # via -r requirements.in
 nltk==3.5
     # via lunr
 pygments==2.7.4
-    # via -r documentation/requirements.in
-pyyaml==5.1.2
+    # via -r requirements.in
+pyyaml==5.4
     # via mkdocs
 regex==2020.11.13
     # via nltk
@@ -44,7 +42,3 @@ tornado==6.0.3
     #   mkdocs
 tqdm==4.55.1
     # via nltk
-typing-extensions==3.7.4.3
-    # via importlib-metadata
-zipp==3.4.0
-    # via importlib-metadata
