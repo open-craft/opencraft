@@ -3,11 +3,12 @@ Signals for Grove app to deploy new instances through signals.
 """
 
 import logging
-from grove.models.deployment import GroveDeployment
-from grove.models.gitlabpipeline import GitlabPipeline
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+from grove.models.deployment import GroveDeployment
+from grove.models.gitlabpipeline import GitlabPipeline
 
 logger = logging.getLogger(__name__)
 

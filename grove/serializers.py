@@ -77,10 +77,9 @@ class GroveInstanceSerializer(serializers.ModelSerializer):
         serializer = GroveDeploymentSerializer(deployments, many=True)
         return serializer.data
 
-
     deployments = serializers.SerializerMethodField()
     repository = GroveClusterRepositorySerializer(read_only=True)
-    
+
     class Meta:
         model = GroveInstance
         fields = "__all__"
