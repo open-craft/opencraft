@@ -243,6 +243,13 @@ class DomainNameInstance(models.Model):
         return u'https://{}/'.format(self.domain)
 
     @property
+    def mfe_url(self):
+        """
+        MFE URL.
+        """
+        return u'https://{}/'.format(self.mfe_domain)
+
+    @property
     def studio_url(self):
         """
         Studio URL.

@@ -45,6 +45,7 @@ from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_periodic_builds import OpenEdXPeriodicBuildsMixin
 from instance.models.mixins.openedx_site_configuration import OpenEdXSiteConfigurationMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
+from instance.models.mixins.openedx_studio_oauth import OpenEdXStudioOauthMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
@@ -65,6 +66,7 @@ class OpenEdXInstance(
         OpenEdXDatabaseMixin,
         OpenEdXMonitoringMixin,
         OpenEdXStorageMixin,
+        OpenEdXStudioOauthMixin,
         OpenEdXThemeMixin,
         OpenEdXPeriodicBuildsMixin,
         OpenEdXSiteConfigurationMixin,
