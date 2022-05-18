@@ -96,9 +96,9 @@ class OpenEdXStudioOauthMixinTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         self._check_generated_settings(instance)
 
-    def test_studio_oauth_maple_settings(self):
+    def test_studio_oauth_production_settings(self):
         """
         Test that Studio Oauth key and secret are passed to the appserver on Maple
         """
-        instance = OpenEdXInstanceFactory(openedx_release='opencraft-release/maple.3')
+        instance = OpenEdXInstanceFactory(openedx_release=settings.STABLE_EDX_PLATFORM_COMMIT)
         self._check_generated_settings(instance)
