@@ -595,10 +595,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 'EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_DOMAIN': '.{}'.format(self.instance.domain),
                 'EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_NAME': 'cross-domain-cookie-mfe',
                 'EDXAPP_CORS_ORIGIN_WHITELIST': [
-                    self.instance.url,
-                    self.instance.lms_preview_url,
-                    self.instance.studio_url,
-                    self.instance.mfe_url,
+                    self.instance.url.rstrip('/'),
+                    self.instance.lms_preview_url.rstrip('/'),
+                    self.instance.studio_url.rstrip('/'),
+                    self.instance.mfe_url.rstrip('/'),
                 ],
                 'EDXAPP_LMS_WRITABLE_GRADEBOOK_URL': '{}/gradebook'.format(self.instance.mfe_url),
                 'MFE_FLAGS_SETUP_FLAGS_LIST': [
