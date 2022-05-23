@@ -600,7 +600,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     self.instance.studio_url.rstrip('/'),
                     self.instance.mfe_url.rstrip('/'),
                 ],
-                'EDXAPP_LMS_WRITABLE_GRADEBOOK_URL': '{}/gradebook'.format(self.instance.mfe_url),
+                'EDXAPP_LMS_WRITABLE_GRADEBOOK_URL': '{}gradebook'.format(self.instance.mfe_url),
                 'MFE_FLAGS_SETUP_FLAGS_LIST': [
                     'grades.writable_gradebook',
                     'course_home.course_home_use_legacy_frontend',
