@@ -145,7 +145,7 @@ jobs:
 
   build:
     docker:
-      - image: circleci/python:3.6-stretch-node-browsers
+      - image: circleci/python:3.8-buster-node-browsers
         environment:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
@@ -241,7 +241,7 @@ jobs:
 
   e2e-tests:
     docker:
-      - image: circleci/python:3.6-stretch-node-browsers
+      - image: circleci/python:3.8-buster-node-browsers
         environment:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
@@ -325,7 +325,7 @@ jobs:
 
   coverage:
     docker:
-      - image: circleci/python:3.6-stretch-node
+      - image: circleci/python:3.8-buster-node
     steps:
       - checkout
       - restore_cache:
@@ -358,7 +358,7 @@ jobs:
 
   cleanup:
     docker:
-      - image: circleci/python:3.6-stretch
+      - image: circleci/python:3.8-buster
         environment:
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           DJANGO_SETTINGS_MODULE: 'opencraft.settings'
