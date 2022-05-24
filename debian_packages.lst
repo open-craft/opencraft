@@ -3,7 +3,7 @@ libffi-dev
 libmysqlclient-dev
 libpq-dev
 make
-mysql-client
+default-mysql-client
 postgresql-client
 python-dev
 python2.7-dev

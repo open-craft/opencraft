@@ -338,7 +338,7 @@ jobs:
             pip install --upgrade pip
             pip install --upgrade virtualenv
             sudo apt-get update; sudo apt-get install python2.7-dev
-            sudo apt-get install mysql-client
+            sudo apt-get install default-mysql-client
             pip install -r requirements.txt
             pip install -r cleanup_utils/requirements.txt
             sudo apt-get install postgresql-client
