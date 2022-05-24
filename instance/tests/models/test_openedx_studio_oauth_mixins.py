@@ -25,16 +25,11 @@ OpenEdXInstance Studio Oauth Mixins - Tests
 from django.conf import settings
 
 import yaml
-from botocore.session import get_session
 
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
-
-# Clients #####################################################################
-iam_client = get_session().create_client('iam')
-s3_client = get_session().create_client('s3')
 
 # Tests #######################################################################
 
