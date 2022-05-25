@@ -574,7 +574,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                         'bucket': '{{ EDXAPP_AWS_STORAGE_BUCKET_NAME }}'
                     }
                 },
-                'EDXAPP_CELERY_BROKER_TRANSPORT': 'amqp',
                 'MFE_BASE': self.instance.mfe_domain,
                 'MFE_SITE_NAME': self.instance.name,
                 'MFE_BASE_SCHEMA': 'https',
