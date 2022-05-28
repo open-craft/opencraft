@@ -19,7 +19,7 @@
 
 // App configuration //////////////////////////////////////////////////////////
 
-var app = angular.module('InstanceApp', []); // Load the existing app, so we can add to it.
+var app = angular.module('InstanceApp'); // Load the existing app, so we can add to it.
 
 app.config(function($stateProvider) {
 
