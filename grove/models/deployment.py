@@ -27,6 +27,7 @@ from django.utils.text import slugify
 
 from grove.models.gitlabpipeline import GitlabPipeline
 from instance.models.deployment import Deployment
+from instance.utils import publish_data
 
 
 class GroveDeployment(Deployment):
@@ -44,16 +45,25 @@ class GroveDeployment(Deployment):
     TRIGGERED = 1
     DEPLOYED = 2
     CANCELLED = 3
+    FAILED = 4
+
+    STATUS_NAMES = (
+        "Pending",
+        "Triggered Deployment",
+        "Deployed",
+        "Cancelled",
+        "Failed",
+    )
 
     STATUS_CHOICES = (
-        (PENDING, 'Pending',),
-        (TRIGGERED, 'Triggered Deployment',),
-        (DEPLOYED, 'Deployed',),
-        (CANCELLED, 'Cancelled'),
+        (PENDING, STATUS_NAMES[PENDING],),
+        (TRIGGERED, STATUS_NAMES[TRIGGERED],),
+        (DEPLOYED, STATUS_NAMES[DEPLOYED],),
+        (CANCELLED, STATUS_NAMES[CANCELLED]),
+        (FAILED, STATUS_NAMES[FAILED]),
     )
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=PENDING)
     pipeline = models.ForeignKey(GitlabPipeline, on_delete=models.SET_NULL, null=True, blank=True)
-
 
     def build_trigger_payload(self) -> Dict[str, Any]:
         """
@@ -63,7 +73,7 @@ class GroveDeployment(Deployment):
         payload = {
             "variables[INSTANCE_NAME]": slugify(instance.name),
             "variables[DEPLOYMENT_REQUEST_ID]": self.pk,
-            "variables[NEW_INSTANCE_TRIGGER]": True,
+            "variables[NEW_INSTANCE_TRIGGER]": self.instance.deployment_set.count() == 0,
 
             "TUTOR_LMS_HOST": instance.external_lms_domain or instance.internal_lms_domain,
             "TUTOR_PREVIEW_LMS_HOST": instance.external_lms_preview_domain or instance.internal_lms_preview_domain,
@@ -72,7 +82,7 @@ class GroveDeployment(Deployment):
             "TUTOR_ECOMMERCE_HOST": instance.external_ecommerce_domain or instance.internal_ecommerce_domain,
         }
 
-        payload.update(self.overrides)
+        payload.update(self.overrides or {})
         return payload
 
     def build_abort_pipeline_trigger_payload(self, pipeline_id) -> Dict[str, Any]:
@@ -119,3 +129,12 @@ class GroveDeployment(Deployment):
         self.status = self.CANCELLED
         self.save()
         return response
+
+    def save(self, **kwargs):
+        super(GroveDeployment, self).save(**kwargs)
+
+        publish_data({
+            'type': 'grove_deployment_update',
+            'deployment_id': self.id,
+            'instance_id': self.instance.id,
+        })

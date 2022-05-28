@@ -40,7 +40,11 @@ def get_default_repository() -> "GroveClusterRepository":
 
     repository, _ = GroveClusterRepository.objects.get_or_create(
         name=settings.GROVE_DEFAULT_REPOSITORY_NAME,
+        git_repo_url=settings.GROVE_DEFAULT_REPOSITORY_URL,
         project_id=settings.GROVE_DEFAULT_REPOSITORY_PROJECT_ID,
+        username=settings.DEFAULT_GITLAB_USER,
+        personal_access_token=settings.DEFAULT_GITLAB_PERSONAL_ACCESS_TOKEN,
+        trigger_token=settings.GROVE_DEFAULT_REPOSITORY_TRIGGER_TOKEN,
         defaults={
             'unleash_instance_id': settings.GROVE_DEFAULT_REPOSITORY_UNLEASH_INSTANCE_ID,
             'git_ref': settings.GROVE_DEFAULT_REPOSITORY_GIT_REF,
@@ -72,6 +76,10 @@ class GroveClusterRepository(TimeStampedModel):
         max_length=255,
         help_text="Instance ID of the unleash setup, obtained from GitLab.",
     )
+    git_repo_url = models.CharField(
+        max_length=255,
+        help_text="Repository URL."
+    )
     git_ref = models.CharField(
         max_length=255,
         default='main',
@@ -80,23 +88,14 @@ class GroveClusterRepository(TimeStampedModel):
     username = models.CharField(
         max_length=255,
         help_text="GitLab username",
-        default=None,
-        null=True,
-        blank=True,
     )
     personal_access_token = models.CharField(
         max_length=255,
         help_text="GitLab Personal Access Token",
-        default=None,
-        null=True,
-        blank=True
     )
     trigger_token = models.CharField(
         max_length=255,
         help_text="GitLab token used to trigger pipeline builds.",
-        default=None,
-        null=True,
-        blank=True,
     )
 
     class Meta:

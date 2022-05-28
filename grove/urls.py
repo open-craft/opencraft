@@ -18,15 +18,17 @@
 """
 URL and routing registration for the Grove app.
 """
-
+from django.conf.urls import url
 from rest_framework import routers
 
 from grove.api.v1.views import GroveDeploymentAPIView, gitlab_webhook
 
+app_name = "grove"
 
 router = routers.DefaultRouter()
 
-router.register(r"deployments", GroveDeploymentAPIView)
-router.register(r"webhook", gitlab_webhook)
+router.register(r"deployments", GroveDeploymentAPIView, basename="grove-deployment")
 
-urlpatterns = router.urls
+urlpatterns = [
+    url("^webhook/$", gitlab_webhook),
+] + router.urls
