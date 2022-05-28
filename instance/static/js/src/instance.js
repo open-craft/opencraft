@@ -238,7 +238,11 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             // [Re]load the instance data from the server.
             return OpenCraftAPI.one("instance", $stateParams.instanceId).get().then(function(instance) {
                 $scope.instance = instance;
-                const deployments_count = instance.deployments.length
+                let deployments_count = 0
+
+                if (instance.deployments !== undefined) {
+                    deployments_count = instance.deployments.length
+                }
 
                 if (instance.appserver_count > $scope.old_appserver_count || deployments_count > $scope.old_deployments_count) {
                     // There is a new AppServer. If we were expecting one, it is here now.
@@ -247,7 +251,7 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
                 }
 
                 $scope.old_appserver_count = instance.appserver_count;
-                $scope.old_deployments_count = instance.deployments.length
+                $scope.old_deployments_count = deployments_count
 
                 if ('notes' in $scope.instance) {
                     $scope.originalNotes = $scope.instance.notes;
