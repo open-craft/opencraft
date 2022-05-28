@@ -54,6 +54,9 @@ class GroveDeploymentSerializer(serializers.ModelSerializer):
         instance = obj.instance.instance
         pipeline = obj.pipeline
 
+        if not instance or not pipeline:
+            return ""
+
         return urljoin(f"{instance.repository.git_repo_url}/", f"-/pipelines/{pipeline.pipeline_id}")
 
     status = serializers.SerializerMethodField()
