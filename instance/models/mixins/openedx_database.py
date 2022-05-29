@@ -60,7 +60,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
     )
 
     # TODO: When every server is using REDIS, use REDIS as default
-    cache_db = models.CharField(max_length=9, choices=CACHE_DBS, default=RABBIT_MQ)
+    cache_db = models.CharField(max_length=9, choices=CACHE_DBS, default=REDIS)
 
     class Meta:
         abstract = True
