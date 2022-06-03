@@ -116,7 +116,7 @@ class OpenEdXAppConfiguration(models.Model):
         default=default_setting('DEFAULT_CONFIGURATION_REPO_URL'),
     )
     configuration_version = models.CharField(
-        max_length=50,
+        max_length=256,
         blank=False,
         default=default_setting('DEFAULT_CONFIGURATION_VERSION'),
     )

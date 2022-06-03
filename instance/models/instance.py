@@ -24,10 +24,12 @@ Instance app models - Open EdX Instance and AppServer models
 
 import logging
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.forms import ValidationError
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
 
@@ -91,6 +93,30 @@ class InstanceReference(TimeStampedModel):
         if not kwargs.pop('instance_already_deleted', False):
             self.instance.delete(ref_already_deleted=True, **kwargs)
         super().delete(**kwargs)
+
+    def clean(self):
+        """
+        Grove instance name limit
+        The 49 characters limit is coming from that DigitalOcean cannot handle
+        bucket names that have more than 63 characters, and we add 14 chars of
+        pre- and suffix to the instance name for buckets.
+
+        Reference:
+        https://gitlab.com/opencraft/dev/grove/-/blob/1b5625958858e334f91541f942f7bdda4b42627e/tools-container/grove-cli/grove/instance.py#L185-200
+        """
+        errors = {}
+        if self.instance_id:
+            grove_app_model = apps.get_model('grove', 'GroveInstance')
+            if grove_app_model == self.instance_type.model_class():
+                grove_name_limit: int = settings.GROVE_INSTANCE_NAME_LENGTH_LIMIT
+                if len(self.name) > grove_name_limit:
+                    name_error = ValidationError(
+                        code='name_length_exceeded',
+                        message=f'Grove instance name length must not exceed {grove_name_limit}',
+                    )
+                    errors['name'] = name_error
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
