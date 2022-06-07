@@ -101,8 +101,8 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 # BB-6228 Studio Oauth login on Maple
                 'SOCIAL_AUTH_EDX_OAUTH2_KEY': self.instance.studio_oauth_key,
                 'SOCIAL_AUTH_EDX_OAUTH2_SECRET': self.instance.studio_oauth_secret,
-                'SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT': self.instance.url,
-                'SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT': self.instance.url,
+                'SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT': self.instance.url.rstrip('/'),
+                'SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT': self.instance.url.rstrip('/'),
                 'SESSION_COOKIE_NAME': settings.STUDIO_SESSION_COOKIE_NAME,
             },
             "EDXAPP_LMS_ENV_EXTRA": {
