@@ -100,9 +100,6 @@ class InstanceReference(TimeStampedModel):
         which is coming from DigitalOcean not being able to handle
         bucket names that have more than 63 characters. We add 14 chars of
         pre- and suffix to the instance name for buckets.
-
-        Reference:
-        https://gitlab.com/opencraft/dev/grove/-/blob/1b5625958858e334f91541f942f7bdda4b42627e/tools-container/grove-cli/grove/instance.py#L185-200
         """
         errors = {}
         if self.instance_id:
