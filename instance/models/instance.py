@@ -96,9 +96,9 @@ class InstanceReference(TimeStampedModel):
 
     def clean(self):
         """
-        Grove instance name limit
-        The 49 characters limit is coming from that DigitalOcean cannot handle
-        bucket names that have more than 63 characters, and we add 14 chars of
+        Grove instance name has 49 characters limit,
+        which is coming from DigitalOcean not being able to handle
+        bucket names that have more than 63 characters. We add 14 chars of
         pre- and suffix to the instance name for buckets.
 
         Reference:
@@ -108,7 +108,7 @@ class InstanceReference(TimeStampedModel):
         if self.instance_id:
             grove_app_model = apps.get_model('grove', 'GroveInstance')
             if grove_app_model == self.instance_type.model_class():
-                grove_name_limit: int = settings.GROVE_INSTANCE_NAME_LENGTH_LIMIT
+                grove_name_limit = settings.GROVE_INSTANCE_NAME_LENGTH_LIMIT
                 if len(self.name) > grove_name_limit:
                     name_error = ValidationError(
                         code='name_length_exceeded',
