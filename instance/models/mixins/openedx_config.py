@@ -603,7 +603,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 'MFE_FLAGS_SETUP_FLAGS_LIST': [
                     'grades.writable_gradebook',
                     'course_home.course_home_use_legacy_frontend',
-                    'courseware.use_legacy_frontend'
+                    'courseware.use_legacy_frontend',
+                ],
+                'MFE_FLAGS_SETUP_DEACTIVATE_LIST': [
+                    'account.redirect_to_microfrontend',
                 ],
                 'EDXAPP_SESSION_COOKIE_DOMAIN': '.{}'.format(self.instance.domain),
             })
