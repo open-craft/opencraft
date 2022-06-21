@@ -574,19 +574,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                         'bucket': '{{ EDXAPP_AWS_STORAGE_BUCKET_NAME }}'
                     }
                 },
-                'MFE_BASE': self.instance.mfe_domain,
-                'MFE_SITE_NAME': self.instance.name,
-                'MFE_BASE_SCHEMA': 'https',
-                'MFE_DEPLOY_NGINX_PORT': 80,
-                'MFE_DEPLOY_COMMON_HOSTNAME': self.instance.mfe_domain,
-                'MFE_DEPLOY_VERSION': self.openedx_release,
-                'MFES': [
-                    {
-                        'name': 'gradebook',
-                        'repo': 'frontend-app-gradebook',
-                        'public_path': '/gradebook/'
-                    }
-                ],
                 'EDXAPP_CSRF_COOKIE_SECURE': True,
                 'EDXAPP_SESSION_COOKIE_SECURE': True,
                 'EDXAPP_ENABLE_CORS_HEADERS': True,
@@ -599,14 +586,36 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     self.instance.studio_url.rstrip('/'),
                     self.instance.mfe_url.rstrip('/'),
                 ],
-                'EDXAPP_LMS_WRITABLE_GRADEBOOK_URL': '{}gradebook'.format(self.instance.mfe_url),
+                'MFE_BASE': self.instance.mfe_domain,
+                'MFE_SITE_NAME': self.instance.name,
+                'MFE_BASE_SCHEMA': 'https',
+                'MFE_DEPLOY_NGINX_PORT': 80,
+                'MFE_DEPLOY_COMMON_HOSTNAME': self.instance.mfe_domain,
+                'MFE_DEPLOY_VERSION': self.openedx_release,
+                "MFES": [
+                    {
+                        "name": "profile",
+                        "repo": "frontend-app-profile",
+                        "public_path": "/profile/"
+                    },
+                    {
+                        "name": "gradebook",
+                        "repo": "frontend-app-gradebook",
+                        "public_path": "/gradebook/"
+                    },
+                    {
+                        "name": "account",
+                        "repo": "frontend-app-account",
+                        "public_path": "/account/"
+                    },
+                ],
+                "EDXAPP_ACCOUNT_MICROFRONTEND_URL": "https://{}/account".format(self.instance.mfe_domain),
+                "EDXAPP_LMS_WRITABLE_GRADEBOOK_URL": "https://{}/gradebook".format(self.instance.mfe_domain),
+                "EDXAPP_PROFILE_MICROFRONTEND_URL": "https://{}/profile/u/".format(self.instance.mfe_domain),
                 'MFE_FLAGS_SETUP_FLAGS_LIST': [
                     'grades.writable_gradebook',
                     'course_home.course_home_use_legacy_frontend',
                     'courseware.use_legacy_frontend',
-                ],
-                'MFE_FLAGS_SETUP_DEACTIVATE_LIST': [
-                    'account.redirect_to_microfrontend',
                 ],
                 'EDXAPP_SESSION_COOKIE_DOMAIN': '.{}'.format(self.instance.domain),
             })
