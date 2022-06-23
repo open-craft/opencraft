@@ -101,12 +101,14 @@ class GrovePayloadMixinTestCase(TestCase):
         """
         expected_settings = {
             "variables": {
-                "INSTANCE_NAME": "test-grove-instance-0",
                 "DEPLOYMENT_REQUEST_ID": "1",
                 "NEW_INSTANCE_TRIGGER": "1"
             }
         }
-        self.execute_payload_test(expected_settings)
+        payload = self.setup_instance()
+        for key, value in expected_settings["variables"].items():
+            self.assertEqual(value, payload["variables"][key])
+        self.assertIn("test-grove-instance-", payload["variables"]["INSTANCE_NAME"])
 
     def test_hostname_payload(self):
         """
@@ -145,11 +147,7 @@ class GrovePayloadMixinTestCase(TestCase):
                 $header-font-color: #000000;
                 $footer-bg: #ffff11;
                 $footer-font-color: #000000;
-            """,
-            'GROVE_SIMPLE_THEME_STATIC_FILES_URLS': [
-                {'dest': 'lms/static/images/logo.png', 'url': '/media/opencraft_logo_small.png'},
-                {'dest': 'lms/static/images/favicon.ico', 'url': '/media/favicon.ico'}
-            ]
+            """
         }
         self.execute_payload_test(expected_settings)
 
