@@ -21,16 +21,15 @@ The Grove deployment model.
 
 from typing import Dict, Any, Optional
 
-from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.utils.text import slugify
 
 from grove.models.gitlabpipeline import GitlabPipeline
+from grove.models.mixins.payload import PayloadMixin
 from instance.models.deployment import Deployment
 from instance.utils import publish_data
 
 
-class GroveDeployment(Deployment):
+class GroveDeployment(Deployment, PayloadMixin):
     """
     GroveDeployment model tracks GitLab CI pipeline deployments.
 
@@ -38,8 +37,6 @@ class GroveDeployment(Deployment):
     deployments. The Console Backend is only responsible for triggering the
     pipeline and listening for webhooks.
     """
-
-    overrides = JSONField(null=True, blank=True)
 
     PENDING = 0
     TRIGGERED = 1
@@ -64,35 +61,6 @@ class GroveDeployment(Deployment):
     )
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=PENDING)
     pipeline = models.ForeignKey(GitlabPipeline, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def build_trigger_payload(self) -> Dict[str, Any]:
-        """
-        Assemble the payload for the GitLab pipeline to trigger a new deployment.
-        """
-        instance = self.instance.instance
-        payload = {
-            "variables[INSTANCE_NAME]": slugify(instance.name),
-            "variables[DEPLOYMENT_REQUEST_ID]": self.pk,
-            "variables[NEW_INSTANCE_TRIGGER]": self.instance.deployment_set.count() == 0,
-
-            "TUTOR_LMS_HOST": instance.external_lms_domain or instance.internal_lms_domain,
-            "TUTOR_PREVIEW_LMS_HOST": instance.external_lms_preview_domain or instance.internal_lms_preview_domain,
-            "TUTOR_CMS_HOST": instance.external_studio_domain or instance.internal_studio_domain,
-            "TUTOR_DISCOVERY_HOST": instance.external_discovery_domain or instance.internal_discovery_domain,
-            "TUTOR_ECOMMERCE_HOST": instance.external_ecommerce_domain or instance.internal_ecommerce_domain,
-        }
-
-        payload.update(self.overrides or {})
-        return payload
-
-    def build_abort_pipeline_trigger_payload(self, pipeline_id) -> Dict[str, Any]:
-        """
-        Assemble the deployment pipeline cancellation payload.
-        """
-        return {
-            "variables[ABORT_DEPLOYMENT_TRIGGER]": True,
-            "variables[PIPELINE_ID]": pipeline_id,
-        }
 
     def trigger_pipeline(self) -> Optional[Dict[str, Any]]:
         """

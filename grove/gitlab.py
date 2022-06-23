@@ -70,7 +70,7 @@ class GitLabClient:
 
         response = requests.post(
             urljoin(self.base_url, f"projects/{self.project_id}/trigger/pipeline"),
-            data={
+            json={
                 **variables,
                 "ref": self.ref,
                 "token": self.trigger_token,
