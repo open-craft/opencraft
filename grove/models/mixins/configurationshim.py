@@ -22,10 +22,11 @@ Grove instance app model mixins - Payload
 
 # Classes #####################################################################
 
+
 class AnsibleConfigurationShim:
     """
     Shim to parse the old ansible configuration settings and append settings to grove payload.
-    
+
     This class is meant to be temporary, to help with the transition from the ansible based
     deployments to the new Grove based deployments.
 
@@ -37,7 +38,7 @@ class AnsibleConfigurationShim:
     in this shim, so as not to interefere with the Grove/Tutor setup. Therefore, those settings would have
     to be handled explicitly during transition from ansible-based setup to Grove.
     """
-    
+
     GENERIC_ENV_CONFIG = {
         "EDXAPP_IDA_LOGOUT_URI_LIST": "IDA_LOGOUT_URI_LIST",
         "EDXAPP_CREDENTIALS_INTERNAL_SERVICE_URL": "CREDENTIALS_INTERNAL_SERVICE_URL",

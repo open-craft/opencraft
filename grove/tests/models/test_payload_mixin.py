@@ -49,8 +49,8 @@ class GrovePayloadMixinTestCase(TestCase):
             internal_studio_domain=self.CMS_HOSTNAME,
             edx_platform_commit=settings.DEFAULT_OPENEDX_RELEASE,
             deploy_simpletheme=True,
-            configuration_extra_settings = """
-                EDXAPP_LMS_ENV: 
+            configuration_extra_settings="""
+                EDXAPP_LMS_ENV:
                     DCS_SESSION_COOKIE_SAMESITE: Lax
                 EDXAPP_LMS_ENV_FEATURES:
                     ENABLE_CREATOR_GROUP: true
@@ -95,10 +95,12 @@ class GrovePayloadMixinTestCase(TestCase):
         for key, value in expected_settings.items():
             self.assertEqual(value, payload[key])
 
-
     def test_basic_trigger_payload(self):
+        """
+        Test instance details are correctly set in payload.
+        """
         expected_settings = {
-            "variables" : {
+            "variables": {
                 "INSTANCE_NAME": "test-grove-instance-0",
                 "DEPLOYMENT_REQUEST_ID": "1",
                 "NEW_INSTANCE_TRIGGER": "1"
@@ -106,8 +108,10 @@ class GrovePayloadMixinTestCase(TestCase):
         }
         self.execute_payload_test(expected_settings)
 
-    
     def test_hostname_payload(self):
+        """
+        Test hostnames are correctly set in payload.
+        """
         expected_settings = {
             "TUTOR_LMS_HOST": self.LMS_HOSTNAME,
             "TUTOR_CMS_HOST": self.CMS_HOSTNAME,
@@ -115,6 +119,9 @@ class GrovePayloadMixinTestCase(TestCase):
         self.execute_payload_test(expected_settings)
 
     def test_theme_payload(self):
+        """
+        Test theme details are correctly set in payload.
+        """
         expected_settings = {
             'GROVE_COMPREHENSIVE_THEME_SOURCE_REPO': settings.SIMPLE_THEME_SKELETON_THEME_LEGACY_REPO,
             'GROVE_COMPREHENSIVE_THEME_VERSION': settings.SIMPLE_THEME_SKELETON_THEME_LEGACY_VERSION,
@@ -140,13 +147,16 @@ class GrovePayloadMixinTestCase(TestCase):
                 $footer-font-color: #000000;
             """,
             'GROVE_SIMPLE_THEME_STATIC_FILES_URLS': [
-                { 'dest': 'lms/static/images/logo.png', 'url': '/media/opencraft_logo_small.png' }, 
-                { 'dest': 'lms/static/images/favicon.ico', 'url': '/media/favicon.ico' }
+                {'dest': 'lms/static/images/logo.png', 'url': '/media/opencraft_logo_small.png'},
+                {'dest': 'lms/static/images/favicon.ico', 'url': '/media/favicon.ico'}
             ]
         }
         self.execute_payload_test(expected_settings)
 
     def test_site_configuration_payload(self):
+        """
+        Test site configuration details are correctly set in payload.
+        """
         expected_settings = {
             "TUTOR_SITE_CONFIG": {
                 'CONTACT_US_CUSTOM_LINK': '/contact',
@@ -156,6 +166,9 @@ class GrovePayloadMixinTestCase(TestCase):
         self.execute_payload_test(expected_settings)
 
     def test_env_configuration_payload(self):
+        """
+        Test lms and cms env config details are correctly set in payload.
+        """
         expected_settings = {
             "ENV_LMS": {
                 "DCS_SESSION_COOKIE_SAMESITE": "Lax",

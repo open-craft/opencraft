@@ -51,7 +51,7 @@ class PayloadMixin(models.Model, AnsibleConfigurationShim):
         """
         grove_instance = self.instance.instance
         payload = {
-            "variables" : {
+            "variables": {
                 "INSTANCE_NAME": slugify(grove_instance.name),
                 "DEPLOYMENT_REQUEST_ID": str(self.pk),
                 "NEW_INSTANCE_TRIGGER": "1"
@@ -67,25 +67,25 @@ class PayloadMixin(models.Model, AnsibleConfigurationShim):
         payload.update(self.overrides or {})
         return payload
 
-    def _build_hostname_payload(self, grove_instance) -> Dict[str, Any]:
+    def _build_hostname_payload(self, instance) -> Dict[str, Any]:
         """
         Build payload with all hostname details.
         """
         hostname_payload = {
-            "TUTOR_LMS_HOST": grove_instance.external_lms_domain or grove_instance.internal_lms_domain,
-            "TUTOR_PREVIEW_LMS_HOST": grove_instance.external_lms_preview_domain or grove_instance.internal_lms_preview_domain,
-            "TUTOR_CMS_HOST": grove_instance.external_studio_domain or grove_instance.internal_studio_domain,
-            "TUTOR_DISCOVERY_HOST": grove_instance.external_discovery_domain or grove_instance.internal_discovery_domain,
-            "TUTOR_ECOMMERCE_HOST": grove_instance.external_ecommerce_domain or grove_instance.internal_ecommerce_domain,
+            "TUTOR_LMS_HOST": instance.external_lms_domain or instance.internal_lms_domain,
+            "TUTOR_PREVIEW_LMS_HOST": instance.external_lms_preview_domain or instance.internal_lms_preview_domain,
+            "TUTOR_CMS_HOST": instance.external_studio_domain or instance.internal_studio_domain,
+            "TUTOR_DISCOVERY_HOST": instance.external_discovery_domain or instance.internal_discovery_domain,
+            "TUTOR_ECOMMERCE_HOST": instance.external_ecommerce_domain or instance.internal_ecommerce_domain,
         }
         return hostname_payload
 
-    def _build_theme_payload(self, grove_instance) -> Dict[str, Any]:
+    def _build_theme_payload(self, instance) -> Dict[str, Any]:
         """
         Build payload with theme repo details and theme customizations.
         """
         grove_theme_settings = {}
-        theme_settings = yaml.load(grove_instance.get_theme_settings(), Loader=yaml.SafeLoader)
+        theme_settings = yaml.load(instance.get_theme_settings(), Loader=yaml.SafeLoader)
 
         if theme_settings:
             grove_theme_settings = {
@@ -99,27 +99,27 @@ class PayloadMixin(models.Model, AnsibleConfigurationShim):
 
         return grove_theme_settings
 
-    def _build_site_configuration_payload(self, grove_instance) -> Dict[str, Any]:
+    def _build_site_configuration_payload(self, instance) -> Dict[str, Any]:
         """
         Build payload with site configurations settings.
         """
-        grove_site_configuration_settings = {}
-        site_configuration_settings = yaml.load(grove_instance.get_site_configuration_settings(), Loader=yaml.SafeLoader)
+        grove_site_configuration = {}
+        site_configuration_settings = yaml.load(instance.get_site_configuration_settings(), Loader=yaml.SafeLoader)
 
         if site_configuration_settings:
-            grove_site_configuration_settings = {
+            grove_site_configuration = {
                 "TUTOR_SITE_CONFIG": site_configuration_settings.get('EDXAPP_SITE_CONFIGURATION')[0].get("values")
             }
 
-        return grove_site_configuration_settings
+        return grove_site_configuration
 
-    def _build_instance_env_configuration_payload(self, grove_instance) -> Dict[str, Any]:
+    def _build_instance_env_configuration_payload(self, instance) -> Dict[str, Any]:
         """
         Build payload with env and feature configurations.
         """
         grove_env_configuration = {}
 
-        configuration_extra_settings = yaml.load(grove_instance.configuration_extra_settings, Loader=yaml.SafeLoader)
+        configuration_extra_settings = yaml.load(instance.configuration_extra_settings, Loader=yaml.SafeLoader)
 
         if configuration_extra_settings:
             grove_env_configuration = {
@@ -134,7 +134,6 @@ class PayloadMixin(models.Model, AnsibleConfigurationShim):
             self.parse_ansible_configuration(grove_env_configuration, configuration_extra_settings)
 
         return grove_env_configuration
-
 
     def build_abort_pipeline_trigger_payload(self, pipeline_id) -> Dict[str, Any]:
         """
