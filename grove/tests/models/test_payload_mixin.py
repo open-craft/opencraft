@@ -95,6 +95,7 @@ class GrovePayloadMixinTestCase(TestCase):
         for key, value in expected_settings.items():
             self.assertEqual(value, payload[key])
 
+    @factory.django.mute_signals(post_save)
     def test_basic_trigger_payload(self):
         """
         Test instance details are correctly set in payload.
