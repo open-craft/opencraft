@@ -77,6 +77,7 @@ class PayloadMixin(models.Model, AnsibleConfigurationShim):
             "TUTOR_CMS_HOST": instance.external_studio_domain or instance.internal_studio_domain,
             "TUTOR_DISCOVERY_HOST": instance.external_discovery_domain or instance.internal_discovery_domain,
             "TUTOR_ECOMMERCE_HOST": instance.external_ecommerce_domain or instance.internal_ecommerce_domain,
+            "TUTOR_MFE_HOST": instance.external_mfe_domain or instance.internal_mfe_domain
         }
         return hostname_payload
 
