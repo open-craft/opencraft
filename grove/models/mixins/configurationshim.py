@@ -295,7 +295,7 @@ class AnsibleConfigurationShim:
         Check if ansible config key is for LMS, CMS or both and append config to correct payload key(s).
         """
         for config_map in self.CONFIG_MAP:
-            (ansible_key_map, grove_config_types) = config_map
+            ansible_key_map, grove_config_types = config_map
             if ansible_key in ansible_key_map:
                 grove_config_key = ansible_key_map.get(ansible_key)
                 config = {grove_config_key: config_value}
