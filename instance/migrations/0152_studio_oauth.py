@@ -8,7 +8,7 @@ import functools
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0150_auto_20220309_1120'),
+        ('instance', '0151_auto_20220529_0952'),
     ]
 
     operations = [
