@@ -1,0 +1,41 @@
+<h4>Deployment {{ deployment.id }}</h4>
+
+<div ng-if="!deployment">
+    <p>Loading Deployment details...</p>
+</div>
+
+
+<accordion close-others="false" ng-if="deployment">
+
+    <accordion-group is-open="true">
+        <accordion-heading>
+            <i ng-attr-class="caret fa {{ $parent.isOpen ? 'fa-caret-down' : 'fa-caret-right' }}"></i>
+            Status
+        </accordion-heading>
+        <table>
+            <tbody>
+            <tr>
+                <th>Status</th>
+                <td><strong>{{ deployment.status }}</strong></td>
+            </tr>
+            <tr>
+                <th>Triggered</th>
+                <td>{{ deployment.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</td>
+            </tr>
+            <tr>
+                <th>Updated</th>
+                <td>{{ deployment.modified | date:'yyyy-MM-dd HH:mm:ssZ' }}</td>
+            </tr>
+            <tr>
+                <th>Pipeline</th>
+                <td><a href="{{ deployment.pipeline }}">{{ deployment.pipeline }}</a></td>
+            </tr>
+            <tr>
+                <th>Overrides</th>
+                <td><pre>{{ deployment.overrides || "{}" }}</pre></td>
+            </tr>
+
+            </tbody>
+        </table>
+    </accordion-group>
+</accordion>

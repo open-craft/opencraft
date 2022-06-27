@@ -82,7 +82,7 @@ class GitLabClient:
 
     def is_there_any_pipeline_running(self):
         """
-        Checks if there any pipeline running for current GitLab project and branch (ref).
+        Checks if there is any pipeline running for current GitLab project and branch (ref).
 
         Returns:
             bool - False if there is no pipeline running, True otherwise.
