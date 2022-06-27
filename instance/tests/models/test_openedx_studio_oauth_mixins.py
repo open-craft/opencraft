@@ -61,10 +61,10 @@ class OpenEdXStudioOauthMixinTestCase(TestCase):
             instance.studio_oauth_secret)
         self.assertEqual(
             parsed_vars['EDXAPP_CMS_ENV_EXTRA']['SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT'],
-            instance.url)
+            instance.url.rstrip('/'))
         self.assertEqual(
             parsed_vars['EDXAPP_CMS_ENV_EXTRA']['SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT'],
-            instance.url)
+            instance.url.rstrip('/'))
         self.assertEqual(
             parsed_vars['EDXAPP_CMS_ENV_EXTRA']['SESSION_COOKIE_NAME'],
             settings.STUDIO_SESSION_COOKIE_NAME)
@@ -79,10 +79,10 @@ class OpenEdXStudioOauthMixinTestCase(TestCase):
             instance.studio_oauth_secret)
         self.assertEqual(
             parsed_vars['EDXAPP_CMS_URL_ROOT'],
-            instance.studio_url)
+            instance.studio_url.rstrip('/'))
         self.assertEqual(
             parsed_vars['EDXAPP_CMS_LOGOUT_URL'],
-            '{}/logout/'.format(instance.studio_url))
+            '{}logout/'.format(instance.studio_url))
 
     def test_studio_oauth_master_settings(self):
         """
