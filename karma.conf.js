@@ -28,7 +28,10 @@ module.exports = function(config) {
       'static/external/js/angular-mocks.js',
       'static/external/js/jshint.js',
       'static/external/js/icheck.min.js',
-      'instance/static/js/src/**/*.js',
+      // Order matters, therefore we cannot use glob patterns for instance/static/js/src
+      'instance/static/js/src/instance.js',
+      'instance/static/js/src/openedx_appserver.js',
+      'instance/static/js/src/grove_deployment.js',
       'registration/static/js/src/**/*.js',
       'instance/tests/fixtures/**/*.json',
       'instance/static/html/instance/**/*.html',
