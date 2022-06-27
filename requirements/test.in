@@ -1,7 +1,6 @@
 -r base.in
 
 coverage<4.6
-cryptography==3.2.1
 ddt
 factory-boy<2.13
 Faker

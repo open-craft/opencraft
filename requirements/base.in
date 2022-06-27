@@ -9,7 +9,7 @@ channels_redis==2.4.0
 CherryPy<18.2
 colour==0.1.5
 cookies<2.3
-cryptography==3.2.1
+cryptography
 dictdiffer<0.9
 Django<2.3,>=2.2
 django-compressor==2.4
