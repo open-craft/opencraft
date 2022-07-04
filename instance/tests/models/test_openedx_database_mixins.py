@@ -837,7 +837,7 @@ class RabbitMQInstanceTestCase(TestCase):
         """
         Test that rabbitmq related ansible variables are set correctly.
         """
-        instance = OpenEdXInstanceFactory()
+        instance = OpenEdXInstanceFactory(cache_db='rabbit_mq')
         appserver = make_test_appserver(instance)
         ansible_vars = appserver.configuration_settings
         rabbit_hostname = '{}:{}'.format(

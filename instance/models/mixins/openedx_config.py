@@ -98,6 +98,12 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # EDXAPP_ENV_EXTRA as the other two overwrite this.
             "EDXAPP_CMS_ENV_EXTRA": {
                 **extra_config,
+                # BB-6228 Studio Oauth login on Maple
+                'SOCIAL_AUTH_EDX_OAUTH2_KEY': self.instance.studio_oauth_key,
+                'SOCIAL_AUTH_EDX_OAUTH2_SECRET': self.instance.studio_oauth_secret,
+                'SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT': self.instance.url.rstrip('/'),
+                'SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT': self.instance.url.rstrip('/'),
+                'SESSION_COOKIE_NAME': settings.STUDIO_SESSION_COOKIE_NAME,
             },
             "EDXAPP_LMS_ENV_EXTRA": {
                 **extra_config,
@@ -115,6 +121,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     # Explicitly set TOS_AND_HONOR link to '#' so that they are not combined.
                     "TOS_AND_HONOR": "#"
                 },
+                # BB-6228 Studio Oauth login on Maple
+                'IDA_LOGOUT_URI_LIST': [
+                    '{}/logout/'.format(self.instance.studio_domain)
+                ]
             },
             "EDXAPP_MKTG_URL_LINK_MAP": {
                 # set the tos and honor pages separately. Required for koa and above.
@@ -439,6 +449,11 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "FUNCTION": "retirement_lms_retire",
                 },
             ],
+            # BB-6228 Studio Oauth login on Maple
+            'EDXAPP_CMS_SOCIAL_AUTH_EDX_OAUTH2_KEY': self.instance.studio_oauth_key,
+            'EDXAPP_CMS_SOCIAL_AUTH_EDX_OAUTH2_SECRET': self.instance.studio_oauth_secret,
+            'EDXAPP_CMS_URL_ROOT': self.instance.studio_url.rstrip('/'),
+            'EDXAPP_CMS_LOGOUT_URL': '{}logout/'.format(self.instance.studio_url),
         }
 
         if self.smtp_relay_settings:
@@ -542,7 +557,68 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "EDXAPP_LMS_WRITABLE_GRADEBOOK_URL": "https://{}/gradebook".format(self.instance.mfe_domain),
                 "EDXAPP_PROFILE_MICROFRONTEND_URL": "https://{}/profile/u/".format(self.instance.mfe_domain),
             })
-
+        if self._is_openedx_release_in(['maple']):
+            template.update({
+                'EDXAPP_VIDEO_IMAGE_SETTINGS': {
+                    'VIDEO_IMAGE_MAX_BYTES': 2097152,
+                    'VIDEO_IMAGE_MIN_BYTES': 2048,
+                    'STORAGE_KWARGS': {
+                        'location': 'video-images/',
+                        'bucket': '{{ EDXAPP_AWS_STORAGE_BUCKET_NAME }}'
+                    }
+                },
+                'EDXAPP_VIDEO_TRANSCRIPTS_SETTINGS': {
+                    'VIDEO_TRANSCRIPTS_MAX_BYTES': 3145728,
+                    'STORAGE_KWARGS': {
+                        'location': 'video-transcripts/',
+                        'bucket': '{{ EDXAPP_AWS_STORAGE_BUCKET_NAME }}'
+                    }
+                },
+                'EDXAPP_CSRF_COOKIE_SECURE': True,
+                'EDXAPP_SESSION_COOKIE_SECURE': True,
+                'EDXAPP_ENABLE_CORS_HEADERS': True,
+                'EDXAPP_ENABLE_CROSS_DOMAIN_CSRF_COOKIE': True,
+                'EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_DOMAIN': '.{}'.format(self.instance.domain),
+                'EDXAPP_CROSS_DOMAIN_CSRF_COOKIE_NAME': 'cross-domain-cookie-mfe',
+                'EDXAPP_CORS_ORIGIN_WHITELIST': [
+                    self.instance.url.rstrip('/'),
+                    self.instance.lms_preview_url.rstrip('/'),
+                    self.instance.studio_url.rstrip('/'),
+                    self.instance.mfe_url.rstrip('/'),
+                ],
+                'MFE_BASE': self.instance.mfe_domain,
+                'MFE_SITE_NAME': self.instance.name,
+                'MFE_BASE_SCHEMA': 'https',
+                'MFE_DEPLOY_NGINX_PORT': 80,
+                'MFE_DEPLOY_COMMON_HOSTNAME': self.instance.mfe_domain,
+                'MFE_DEPLOY_VERSION': self.openedx_release,
+                "MFES": [
+                    {
+                        "name": "profile",
+                        "repo": "frontend-app-profile",
+                        "public_path": "/profile/"
+                    },
+                    {
+                        "name": "gradebook",
+                        "repo": "frontend-app-gradebook",
+                        "public_path": "/gradebook/"
+                    },
+                    {
+                        "name": "account",
+                        "repo": "frontend-app-account",
+                        "public_path": "/account/"
+                    },
+                ],
+                "EDXAPP_ACCOUNT_MICROFRONTEND_URL": "https://{}/account".format(self.instance.mfe_domain),
+                "EDXAPP_LMS_WRITABLE_GRADEBOOK_URL": "https://{}/gradebook".format(self.instance.mfe_domain),
+                "EDXAPP_PROFILE_MICROFRONTEND_URL": "https://{}/profile/u/".format(self.instance.mfe_domain),
+                'MFE_FLAGS_SETUP_FLAGS_LIST': [
+                    'grades.writable_gradebook',
+                    'course_home.course_home_use_legacy_frontend',
+                    'courseware.use_legacy_frontend',
+                ],
+                'EDXAPP_SESSION_COOKIE_DOMAIN': '.{}'.format(self.instance.domain),
+            })
         if settings.OPENEDX_ORACLEJDK_URL:
             template["oraclejdk_url"] = settings.OPENEDX_ORACLEJDK_URL
 
