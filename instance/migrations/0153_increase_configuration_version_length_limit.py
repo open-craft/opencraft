@@ -8,7 +8,7 @@ import instance.models.utils
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0151_auto_20220529_0952'),
+        ('instance', '0152_studio_oauth'),
     ]
 
     operations = [
