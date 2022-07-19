@@ -48,7 +48,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "CLOSEST_CLIENT_IP_FROM_HEADERS": [
                 {"name": "X-Forwarded-For", "index": -1},
             ],
-            "NUM_PROXIES": 1,
+            "REST_FRAMEWORK": {
+                "NUM_PROXIES": 1,
+            },
         }
 
         template = {
