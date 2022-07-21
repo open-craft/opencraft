@@ -43,6 +43,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Use database-backed sessions to stay logged in across appserver deploys.
             # (We have EDXAPP_CLEARSESSIONS_CRON_ENABLED to clean up old data.)
             "SESSION_ENGINE": "django.contrib.sessions.backends.cached_db",
+            # The following two settings help determine the public IP of the request.
+            # See: https://discuss.openedx.org/t/security-patch-for-rate-limiting-in-edx-platform/7078
+            "CLOSEST_CLIENT_IP_FROM_HEADERS": [
+                {"name": "X-Forwarded-For", "index": -1},
+            ],
+            "REST_FRAMEWORK": {
+                "NUM_PROXIES": 1,
+            },
         }
 
         template = {
