@@ -23,3 +23,15 @@
     }
   }
 }
+
+.theme-navigation-header {
+  h2 {
+    margin-bottom: 0px !important;
+  }
+
+  p {
+    font-family: $chivo-font;
+    font-size: 14px;
+    color: #666666;
+  }
+}

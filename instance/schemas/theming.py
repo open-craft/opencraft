@@ -157,6 +157,8 @@ theme_schema = {
     "oneOf": [nullable_schema, theme_schema_v0, theme_schema_v1]
 }
 
+default_main_nav_link_color = "#000000"
+
 DEFAULT_THEME = {
     "version": 1,
     "main-color": "#126F9A",
@@ -180,7 +182,13 @@ DEFAULT_THEME = {
     # Hero text colors. Required for the hero customization section in the console.
     "home-page-hero-title-color": "#313131",
     "home-page-hero-subtitle-color": "#646464",
+    # Navigation theme configuration
+    "main-nav-link-color": default_main_nav_link_color,
+    "main-nav-item-border-bottom-color": "#0075b4",
+    "main-nav-item-hover-border-bottom-color": "#0075b4",
+    "user-dropdown-color": default_main_nav_link_color,
 }
+
 
 def theme_schema_validate(value, schema=None):
     """

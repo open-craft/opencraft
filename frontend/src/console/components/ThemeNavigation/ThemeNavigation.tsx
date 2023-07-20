@@ -47,9 +47,25 @@ export class ThemeNavigationComponent extends React.PureComponent<
     return (
       <ConsolePage contentLoading={this.props.loading}>
         <ConsolePageCustomizationContainer>
-          <h2>
-            <WrappedMessage messages={messages} id="themeNavigation" />
-          </h2>
+          <div className="theme-navigation-header">
+            <Row>
+              <Col>
+                <h2>
+                  <WrappedMessage messages={messages} id="themeNavigation" />
+                </h2>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <p>
+                  <WrappedMessage
+                    messages={messages}
+                    id="navigationDescription"
+                  />
+                </p>
+              </Col>
+            </Row>
+          </div>
 
           {themeData && themeData.version === 1 && (
             <div className="theme-navigation-container">
@@ -63,11 +79,6 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 loggedIn
               />
               <Row>
-                <p className="style-name">
-                  <WrappedMessage messages={messages} id="navigationLinks" />
-                </p>
-              </Row>
-              <Row>
                 <Col md={4}>
                   <ColorInputField
                     fieldName="headerBg"
@@ -75,7 +86,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
                 <Col md={4}>
@@ -85,9 +96,11 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
+              </Row>
+              <Row>
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemBorderBottomColor"
@@ -95,11 +108,9 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
-              </Row>
-              <Row>
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemHoverBorderBottomColor"
@@ -109,17 +120,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
-                  />
-                </Col>
-                <Col md={4}>
-                  <ColorInputField
-                    fieldName="userDropdownColor"
-                    initialValue={themeData.userDropdownColor || ''}
-                    onChange={this.onChangeColor}
-                    messages={messages}
-                    loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
               </Row>

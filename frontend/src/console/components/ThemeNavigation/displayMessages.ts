@@ -1,6 +1,10 @@
 const messages = {
   themeNavigation: {
-    defaultMessage: 'Main navigation menu',
+    defaultMessage: 'Navigation',
+    description: ''
+  },
+  navigationDescription: {
+    defaultMessage: 'Customize the navigation bar of your instances',
     description: ''
   },
   navigationLinks: {
@@ -12,19 +16,37 @@ const messages = {
     description: ''
   },
   headerBg: {
-    defaultMessage: 'Header color',
+    defaultMessage: 'Background',
+    description: ''
+  },
+  headerBgHelp: {
+    defaultMessage: 'Customizes the background color of the navigation bar',
     description: ''
   },
   mainNavLinkColor: {
-    defaultMessage: 'Header link color',
+    defaultMessage: 'Links',
+    description: ''
+  },
+  mainNavLinkColorHelp: {
+    defaultMessage: 'Customizes the color of the links on the navigation bar',
     description: ''
   },
   mainNavItemBorderBottomColor: {
-    defaultMessage: 'Header link border color',
+    defaultMessage: 'Active link',
+    description: ''
+  },
+  mainNavItemBorderBottomColorHelp: {
+    defaultMessage:
+      'Customizes the color of the border shown below the links on the navigation bar',
     description: ''
   },
   mainNavItemHoverBorderBottomColor: {
-    defaultMessage: 'Header link border color on hover',
+    defaultMessage: 'Active link on hover',
+    description: ''
+  },
+  mainNavItemHoverBorderBottomColorHelp: {
+    defaultMessage:
+      'Customizes the color of the border shown below the links of the navigation bar when the mouse hovers over the links',
     description: ''
   },
   userDropdownColor: {
